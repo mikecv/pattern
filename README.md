@@ -1,1 +1,1 @@
-# pattern
+# Mandlebrot patterns explorer.
