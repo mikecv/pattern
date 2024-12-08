@@ -6,13 +6,15 @@ use actix_files as fsx;
 use actix_web::{get, web, App, HttpServer, HttpResponse, Responder};
 use lazy_static::lazy_static;
 use std::fs;
-use std::sync::{Mutex};
+use std::sync::{Arc, Mutex};
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
 
 use crate::settings::Settings;
+use crate::fractals::Fractal;
 
 pub mod settings;
+pub mod fractals;
 
 // Create a global variable for application settings.
 // This will be available in other files.
@@ -61,9 +63,14 @@ async fn main() -> std::io::Result<()> {
     // Do initial program version logging, mainly as a test.
     info!("Application started: {} v({})", settings.program_name, settings.program_ver);
 
+    // Instantiate a fractals struct.
+    // Call init method to initialise struct.
+    let fractal_img = Arc::new(Mutex::new(Fractal::init()));
+
     // Create and start web service.
     HttpServer::new(move || {
         App::new()
+            .app_data(web::Data::new(fractal_img.clone()))
             .app_data(web::Data::new(settings.clone()))
             .service(fsx::Files::new("/fractals", "./fractals").show_files_listing())
             .service(intro)
