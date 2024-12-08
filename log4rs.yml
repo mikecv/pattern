@@ -1,0 +1,22 @@
+appenders:
+  log_file:
+    kind: rolling_file
+    append: true
+    path: "logs/fractals.log"
+    encoder:
+      pattern: "{h({d(%d-%m-%Y %H:%M:%S)})} - {l:<5} {t}:{L} - {m}{n}"
+    policy:
+      kind: compound
+      trigger:
+        kind: size
+        limit: 10mb
+      roller:
+        kind: fixed_window
+        base: 1
+        count: 3
+        pattern: "logs/fractals{}.log"
+
+root:
+  level: info
+  appenders:
+    - log_file

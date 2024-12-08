@@ -1,0 +1,33 @@
+/* Main and default document styles.*/
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #c4cad8;
+    color: #333;
+}
+
+section {
+	border: none;
+}
+
+div {
+	border: none;
+    text-align: center;
+    align-items: center;
+}
+
+ .center {
+    text-align: center;
+}
+
+h1 {
+    color: #32659c;
+	text-align:center;
+}
+
+p {
+    font-size: 1.0em;
+    line-height: 100%;
+    margin-top: 0.25em ;
+    margin-bottom: 1.0em ;
+}
