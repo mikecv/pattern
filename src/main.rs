@@ -65,12 +65,12 @@ async fn main() -> std::io::Result<()> {
 
     // Instantiate a fractals struct.
     // Call init method to initialise struct.
-    let fractal_img = Arc::new(Mutex::new(Fractal::init()));
+    let fractal = Arc::new(Mutex::new(Fractal::init()));
 
     // Create and start web service.
     HttpServer::new(move || {
         App::new()
-            .app_data(web::Data::new(fractal_img.clone()))
+            .app_data(web::Data::new(fractal.clone()))
             .app_data(web::Data::new(settings.clone()))
             .service(fsx::Files::new("/fractals", "./fractals").show_files_listing())
             .service(intro)

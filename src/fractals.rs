@@ -50,4 +50,19 @@ impl Fractal {
             render_duration: Duration::new(0, 0),
         }
     }
+
+    // Method to initialize starting fractal image.
+    pub fn init_fractal_image(&mut self) {
+        self.rows = self.settings.init_rows;
+        self.cols = self.settings.init_cols;
+        self.pt_div = self.settings.init_pt_div;
+        let mid_pt_re:f64 = self.settings.init_mid_pt_re;
+        let mid_pt_im:f64 = self.settings.init_mid_pt_im;
+        self.mid_pt = Complex::new(mid_pt_re, mid_pt_im);
+        self.max_its = self.settings.init_max_its;
+        self.left_lim = self.mid_pt.re - (self.cols as f64 / 2.0) * self.pt_div;
+        self.top_lim = self.mid_pt.im + (self.rows as f64 / 2.0) * self.pt_div;
+        self.pt_lt.re = self.left_lim;
+        self.pt_lt.im = self.top_lim;      
+    }
 }
