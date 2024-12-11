@@ -2,32 +2,27 @@
 
 body {
     font-family: Arial, sans-serif;
-    background-color: #c4cad8;
-    color: #333;
+    margin: 20px;
 }
 
-section {
-	border: none;
+.container {
+    max-width: 300px;
 }
 
-div {
-	border: none;
+.parameter {
+    margin-bottom: 10px;
+}
+
+table {
+    border-collapse: collapse;
+    margin-bottom: 10px;
+}
+
+button {
+    padding: 5px 10px;
+}
+
+#result {
     text-align: center;
-    align-items: center;
-}
-
- .center {
-    text-align: center;
-}
-
-h1 {
-    color: #32659c;
-	text-align:center;
-}
-
-p {
-    font-size: 1.0em;
-    line-height: 100%;
-    margin-top: 0.25em ;
-    margin-bottom: 1.0em ;
+    margin-bottom: 20px;
 }

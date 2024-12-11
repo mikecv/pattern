@@ -11,6 +11,50 @@
 <body>
     <h1>Fractals</h1>
 
+    <div class="container">
+        <div class="parameter">
+            <label for="init_rows">Rows:</label><br>
+            <input type="number" id="init_rows" name="init_rows">
+        </div>
+        <div class="parameter">
+            <label for="init_cols">Cols:</label><br>
+            <input type="number" id="init_cols" name="init_cols">
+        </div>
+        <div class="parameter">
+            <label for="init_mid_pt_re">Centre (Re):</label><br>
+            <input type="number" step="any" id="init_mid_pt_re" name="init_mid_pt_re">
+        </div>
+        <div class="parameter">
+            <label for="init_mid_pt_im">Centre (Im):</label><br>
+            <input type="number" step="any" id="init_mid_pt_im" name="init_mid_pt_im">
+        </div>
+        <div class="parameter">
+            <label for="init_pt_div">Pixel Division:</label><br>
+            <input type="number" id="init_pt_div" name="init_pt_div">
+        </div>
+        <div class="parameter">
+            <label for="init_max_its">Maximum Iterations:</label><br>
+            <input type="number" id="init_max_its" name="init_max_its">
+        </div>
+        <button id="initializeButton">Initialize</button>
+        <div id="result">
+            <h2>Generated Image:</h2>
+            <img id="resultImage" src="" alt="No image generated yet" style="max-width: 100%; height: auto; display: none;">
+        </div>
+    </div>
+
+    <script>
+        // Embed default values as variables for the external JS to use.
+        window.defaults = {
+            value1: {{ default_rows }},
+            value2: {{ default_cols }},
+            value3: {{ default_centre_re }},
+            value4: {{ default_centre_im }},
+            value5: {{ default_division }},
+            value6: {{ default_max_its }}
+        };
+    </script>
+
     <!-- Include JS script functions. -->
     <script type="text/javascript" src="/static/index-scripts.js"></script>
 

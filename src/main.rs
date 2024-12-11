@@ -33,7 +33,28 @@ lazy_static! {
 
 #[get("/")]
 async fn intro() -> impl Responder {
-    HttpResponse::Ok().content_type("text/html").body(include_str!("../static/index.html"))
+
+    // Get application settings in scope.
+    let settings: Settings = SETTINGS.lock().unwrap().clone();
+
+    // Assign parameter defaults so that they can be passed to UI.
+    let default_rows = settings.init_rows;
+    let default_cols = settings.init_cols;
+    let default_centre_re = settings.init_mid_pt_re;
+    let default_centre_im = settings.init_mid_pt_im;
+    let default_division = settings.init_pt_div;
+    let default_max_its = settings.init_max_its;
+
+    // In the UI replace the parameter tags with the default values.
+    let html = include_str!("../static/index.html")
+        .replace("{{ default_rows }}", &default_rows.to_string())
+        .replace("{{ default_cols }}", &default_cols.to_string())
+        .replace("{{ default_centre_re }}", &default_centre_re.to_string())
+        .replace("{{ default_centre_im }}", &default_centre_im.to_string())
+        .replace("{{ default_division }}", &default_division.to_string())
+        .replace("{{ default_max_its }}", &default_max_its.to_string());
+
+        HttpResponse::Ok().content_type("text/html").body(html)
 }
 
 async fn help(settings: web::Data<Settings>) -> impl Responder {
