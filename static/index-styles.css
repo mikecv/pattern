@@ -1,28 +1,65 @@
-/* Main and default document styles.*/
+/* Main and default document styles */
 
 body {
     font-family: Arial, sans-serif;
     margin: 20px;
 }
 
+h1 {
+    font-size: 20px;
+    font-weight: bold;
+}
+
 .container {
     max-width: 300px;
 }
 
-.parameter {
-    margin-bottom: 10px;
+/* Style for each field (label and input pair) */
+.status-field,
+.parameter-field {
+    margin-bottom: 10px; /* Controls spacing between field blocks */
+    display: flex;
+    flex-direction: column; /* Stack label and input vertically */
 }
 
-table {
-    border-collapse: collapse;
-    margin-bottom: 10px;
+/* Label styling */
+.status-field label,
+.parameter-field label {
+    font-size: 10px;
+    font-weight: bold;
+    margin-bottom: 5px; /* Space between label and input box */
+    text-align: left;
 }
 
+/* Input box styling */
+.status-field input,
+.parameter-field input {
+    width: 100%; /* Ensures input box fits container */
+    padding: 5px;
+    outline: 1px solid gray;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    font-size: 10px;
+    box-sizing: border-box; /* Ensures padding doesn't exceed width */
+}
+
+/* Button styling */
 button {
     padding: 5px 10px;
+    margin-top: 10px;
+    font-size: 13px;
+    font-weight: bold;
 }
 
+/* Result styling */
 #result {
     text-align: center;
     margin-bottom: 20px;
+}
+
+/* Container for status boxes */
+#status-container {
+    text-align: left;
+    margin-top: 20px;
 }

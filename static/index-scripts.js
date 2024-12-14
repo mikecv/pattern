@@ -31,13 +31,29 @@ document.getElementById('initializeButton').addEventListener('click', () => {
     .then(response => response.json())
     .then(data => {
         console.log("Generation data enpoint reached.");
+        // Update the fractal parameters as they may have changed.
+        // Just update the existing fields.
+        document.getElementById('init_rows').value = data.params.value1;
+        document.getElementById('init_cols').value = data.params.value2;
+        document.getElementById('init_mid_pt_re').value = data.params.value3;
+        document.getElementById('init_mid_pt_im').value = data.params.value4;
+        document.getElementById('init_pt_div').value = data.params.value5;
+        document.getElementById('init_max_its').value = data.params.value6;
+
         if (data.generation === "True") {
-            console.log('Fractall generated in: :', data.time);
-        } else {
+            console.log('Fractal generated in: :', data.time);
+
+            // Update UI text boxes with status.
+            document.getElementById('duration-box').value = data.time;
+            document.getElementById('error-box').value = "Success";
+       } else {
             throw new Error(data.error);
         }
     })
     .catch(error => {
         console.error('Error:', error);
+        // Update UI text boxes with status.
+        document.getElementById('duration-box').value = data.time;
+        document.getElementById('error-box').value = error.message;
         alert("Failed to generate fractal.");
     });});

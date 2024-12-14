@@ -6,8 +6,8 @@ use actix_files as fsx;
 use actix_web::{get, post, web, App, HttpServer, HttpResponse, Responder};
 use lazy_static::lazy_static;
 use num_complex::Complex;
-use serde::Deserialize;
-use std::collections::HashMap;
+use serde::{Deserialize, Serialize};
+use serde_json::json;
 use std::fs;
 use std::sync::{Arc, Mutex};
 use tokio::fs::File;
@@ -63,14 +63,14 @@ async fn intro() -> impl Responder {
 }
 
 // Define structure for fractal parameters payload.
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 struct FractalParams {
-    value1: u32,
-    value2: u32,
-    value3: f64,
-    value4: f64,
-    value5: f64,
-    value6: u32,
+    value1: Option<u32>,
+    value2: Option<u32>,
+    value3: Option<f64>,
+    value4: Option<f64>,
+    value5: Option<f64>,
+    value6: Option<u32>,
 }
 
 #[post("/generate")]
@@ -78,57 +78,69 @@ async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
     info!("Invoking fractal generation endpoint.");
 
     // Get application settings in scope.
-    let _settings: Settings = SETTINGS.lock().unwrap().clone();
+    let settings: Settings = SETTINGS.lock().unwrap().clone();
 
     // Get access to steg instance.
     let mut fractal = fractal.lock().unwrap();
 
     // Access parameters.
-    // Check if any parameters are set to 0 and if so set to default.
-    // For parameters 3 and 4 that are real and imaginary parts of the midpoint,
-    // they are allowed to be 0, so just use the entered values.
-    let params = fractal_params.into_inner();
-    if params.value1 != 0 as u32 {
-        fractal.rows = params.value1;
-    }
-    if params.value2 != 0 as u32 {
-        fractal.cols = params.value2;
-    }
-    fractal.mid_pt = Complex::new(params.value3, params.value4);
-    if params.value5 != 0 as f64 {
-        fractal.pt_div = params.value5;
-    }
-    if params.value6 != 0 as u32 {
-        fractal.max_its = params.value6;
-    }
+    // Check if any parameters are set to none type,
+    // if so, set to default setting.
+    let mut params = fractal_params.into_inner();
 
-    // Initialise the fractal.
-    fractal.init_fractal_image();
+    // Parameter 1.
+    params.value1 = Some(params.value1.unwrap_or(settings.init_rows));
+    fractal.rows = params.value1.unwrap();
+
+    // Parameter 2.
+    params.value2 = Some(params.value2.unwrap_or(settings.init_cols));
+    fractal.cols = params.value2.unwrap();
+
+    // Parameter 3 & 4
+    params.value3 = Some(params.value3.unwrap_or(settings.init_mid_pt_re));
+    let mid_pt_re = params.value3.unwrap();
+    params.value4 = Some(params.value4.unwrap_or(settings.init_mid_pt_im));
+    let mid_pt_im = params.value4.unwrap(); 
+    fractal.mid_pt = Complex::new(mid_pt_re, mid_pt_im);
+
+    // Parameter 5.
+    params.value5 = Some(params.value5.unwrap_or(settings.init_pt_div));
+    fractal.pt_div = params.value5.unwrap();
+
+    // Parameter 6.
+    params.value6 = Some(params.value6.unwrap_or(settings.init_max_its));
+    fractal.max_its = params.value6.unwrap();
 
     // Generate the fractal.
     // and report status and payload to front end.
     match fractal.generate_fractal(){
         Ok(_) => {
-            // Fractal generation successful, respond with status.
-            let mut response_data = HashMap::new();
-            response_data.insert("generation", "True".to_string());
             let test_time_ms:f64 = fractal.generate_duration.as_millis() as f64 / 1000.0 as f64;
             let duration_str = format!("{:.3} sec", test_time_ms);
-            response_data.insert("time", duration_str);
-            response_data.insert("error", "Success".to_string());
+
+            let response_data = json!({
+                "generation": "True",
+                "time": duration_str,
+                "error": "Success",
+                "params": params,
+            });
 
              // Respond with status to display on UI.
              HttpResponse::Ok().json(response_data)
         }
         Err(e) => {
             // Fractal generation failed, respond with error.
-            let mut response_data = HashMap::new();
-            response_data.insert("generation", "False".to_string());
+
             let test_time_ms:f64 = fractal.generate_duration.as_millis() as f64 / 1000.0 as f64;
             let duration_str = format!("{:.3} sec", test_time_ms);
-            response_data.insert("time", duration_str);
-            response_data.insert("error", e.to_string());
- 
+
+            let response_data = json!({
+                "generation": "False",
+                "time": duration_str,
+                "error": e.to_string(),
+                "params": params,
+            });
+
              // Respond with status to display on UI.
              HttpResponse::InternalServerError().json(response_data)
         }
