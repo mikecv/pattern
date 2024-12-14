@@ -3,6 +3,7 @@
 use log::info;
 
 use num_complex::Complex;
+use std::f64::consts;
 use std::fmt;
 use std::time::{Instant, Duration};
 
@@ -83,6 +84,7 @@ impl Fractal {
         self.top_lim = self.mid_pt.im + (self.rows as f64 / 2.0) * self.pt_div;
         self.pt_lt.re = self.left_lim;
         self.pt_lt.im = self.top_lim;      
+        self.escape_its = vec![vec![0; self.cols as usize]; self.rows as usize];
     }
 
     // Method to generate fractal image.
@@ -93,14 +95,86 @@ impl Fractal {
         let generate_start = Instant::now();
 
         // Generate fractal image.
-        // TODO.
         // Return an error code if fail to generate, e.g.
         // return Err(FractalError::NotGenerated);
+
+        // Start with the left top point.
+        let mut st_c: Complex<f64> = self.pt_lt;
+
+        // Iterate calculation over rows.
+        for row in 0..self.rows {
+            // Calculate the starting point for the row.
+            // Just need to deduct incremental distance from
+            // every row after the first (top) row.
+            if row > 0 {
+                st_c.im -= self.pt_div;
+            }
+
+            // Calculate divergence for row.
+            self.cal_row_divergence(row, st_c);
+        }
 
         // Report ok status and timing.
         self.generate_duration = generate_start.elapsed();
         info!("Time to generate fractal: {:?}", self.generate_duration);
 
         Ok(())
-    }   
+    }
+
+    // Methed to calculate fractal divergence at a single point.
+    // For points that reach the iteration count caculate
+    // fractional divergence.
+    pub fn cal_row_divergence(&mut self, row: u32, st_c: Complex<f64>) {
+        // Iterante over all the columns in the row.
+        // Starting point is left of the row.
+        let mut pt_row: Complex<f64> = st_c;
+
+        for col in 0..self.cols {
+            // Iterate point along the row.
+            if col > 0 {
+                pt_row.re += self.pt_div;
+            }
+
+            // Define diverges flag and set to false.
+            let mut diverges: bool = false;
+
+            // Initialise divergence result to complex 0.
+            let mut px_fn: Complex<f64> = Complex::new(0.0, 0.0);
+
+            // Initialise number of iterations.
+            let mut num_its: u32 = 1;
+
+            // Keep iterating until function diverges.
+            while !diverges && (num_its < self.max_its) {
+                // Perform Mandelbrot function Fn+1 = Fn^2 + pt_row.
+                px_fn = (px_fn * px_fn) + pt_row;
+                // Check if function diverges.
+                // Will diverge if modulus equal or greater than 2.
+                if px_fn.norm() >= 2.0 {
+                    diverges = true;
+                }
+                else {
+                    num_its += 1;
+                }
+            }
+
+            // Calculate fractional divergence for higher definition.
+            let mod_fn = px_fn.norm();
+            let mu_log = if mod_fn > consts::E {
+                (mod_fn.ln().ln()) / consts::LN_2
+            } else {
+                0.0
+            };
+            let mut mu = num_its as f64 + 1.0 - mu_log;
+
+            // Limit fractional divergence to maximum iterations
+            if mu > self.max_its as f64 {
+                mu = self.max_its as f64;
+            }
+            num_its = mu as u32;
+
+            // Save number of iterations at the point point.
+            self.escape_its[row as usize][col as usize] = num_its;
+        }
+    }
 }

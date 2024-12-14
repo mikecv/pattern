@@ -113,6 +113,7 @@ async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
 
     // Generate the fractal.
     // and report status and payload to front end.
+    fractal.init_fractal_image();
     match fractal.generate_fractal(){
         Ok(_) => {
             let test_time_ms:f64 = fractal.generate_duration.as_millis() as f64 / 1000.0 as f64;
