@@ -56,7 +56,7 @@ pub struct Fractal {
     pub pt_lt: Complex<f64>,
     pub col_palette: Vec<(u32, (u8, u8, u8))>,
     pub generate_duration: Duration,
-    pub image_file: String,
+    pub image_filename: String,
 }
 
 // Initialise all struct variables.
@@ -81,7 +81,7 @@ impl Fractal {
             pt_lt: Complex::new(0.0, 0.0),
             col_palette: Vec::new(),
             generate_duration: Duration::new(0, 0),
-            image_file: String::from(""),
+            image_filename: String::from(""),
         }
     }
 
@@ -268,8 +268,11 @@ impl Fractal {
         }
 
         // Save the image.
-        self.image_file = wrt_path_string.clone();
-        let _ = img.save(wrt_path_string);
+        let _ = img.save(wrt_path_string.clone());
+
+        // Save image filename without path for sending to back end.
+        self.image_filename = wrt_path_string.clone();
+        info!("Saving fractal image to: {:?}", wrt_path_string);
     }
 }
 

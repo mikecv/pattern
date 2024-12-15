@@ -3,7 +3,8 @@
 use log::info;
 use log4rs;
 use actix_files as fsx;
-use actix_web::{get, post, web, App, HttpServer, HttpResponse, Responder};
+use actix_files::NamedFile;
+use actix_web::{get, post, web, App, HttpRequest, HttpServer, HttpResponse, Responder};
 use lazy_static::lazy_static;
 use num_complex::Complex;
 use serde::{Deserialize, Serialize};
@@ -32,6 +33,12 @@ lazy_static! {
         let settings: Settings = serde_yaml::from_str(&contents).expect("Unable to parse YAML");
         Mutex::new(settings)
     };
+}
+
+// File server.
+async fn serve_image(_req: HttpRequest, path: web::Path<String>) -> actix_web::Result<NamedFile> {
+    let file_path = format!("./fractals/{}", path.into_inner());
+    Ok(NamedFile::open(file_path)?)
 }
 
 #[get("/")]
@@ -124,11 +131,19 @@ async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
             let test_time_ms:f64 = fractal.generate_duration.as_millis() as f64 / 1000.0 as f64;
             let duration_str = format!("{:.3} sec", test_time_ms);
 
+            // Ensure only the filename (not path) is sent to the frontend.
+            let image_filename = std::path::Path::new(&fractal.image_filename)
+                .file_name()
+                .unwrap_or_default()
+                .to_string_lossy()
+                .into_owned();
+
             let response_data = json!({
                 "generation": "True",
                 "time": duration_str,
                 "error": "Success",
                 "params": params,
+                "image": image_filename,
             });
 
              // Respond with status to display on UI.
@@ -192,9 +207,10 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(settings.clone()))
             .service(fsx::Files::new("/fractals", "./fractals").show_files_listing())
             .service(intro)
-            .service(generate)
+            .service(generate) // The `generate` handler for `/generate` endpoint
             .service(actix_files::Files::new("/static", "./static").show_files_listing())
             .route("/help", web::get().to(help))
+            .route("/fractals/{filename}", web::get().to(serve_image))
     })
     .bind("127.0.0.1:8080")?
     .run()
