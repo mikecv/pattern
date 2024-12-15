@@ -8,7 +8,7 @@ fractal_filename:   "fractal.png"
 palette_folder:     "./palettes"
 
 # Initial Mandlebrot plot.
-init_rows:          400
+init_rows:          600
 init_cols:          600
 init_mid_pt_re:     -1.0
 init_mid_pt_im:     0.0

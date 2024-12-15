@@ -2,6 +2,7 @@
 
 use log::info;
 
+use image::{Rgb, RgbImage};
 use num_complex::Complex;
 use serde::Deserialize;
 use std::f64::consts;
@@ -9,6 +10,8 @@ use std::fmt;
 use std::time::{Instant, Duration};
 use std::fs::{self};
 use std::io::{self};
+use std::path::Path;
+use std::path::PathBuf;
 use crate::settings::Settings;
 use crate::SETTINGS;
 
@@ -53,8 +56,7 @@ pub struct Fractal {
     pub pt_lt: Complex<f64>,
     pub col_palette: Vec<(u32, (u8, u8, u8))>,
     pub generate_duration: Duration,
-    pub calc_duration: Duration,
-    pub render_duration: Duration,
+    pub image_file: String,
 }
 
 // Initialise all struct variables.
@@ -79,8 +81,7 @@ impl Fractal {
             pt_lt: Complex::new(0.0, 0.0),
             col_palette: Vec::new(),
             generate_duration: Duration::new(0, 0),
-            calc_duration: Duration::new(0, 0),
-            render_duration: Duration::new(0, 0),
+            image_file: String::from(""),
         }
     }
 
@@ -103,9 +104,9 @@ impl Fractal {
 
     pub fn init_col_pallete(&mut self) -> io::Result<()> {
         info!("Importing default colour palette.");
-    
+
+        // Read default palette from toml file.
         let toml_str = fs::read_to_string("./palettes/default.palette")?;
-        println!("TOML: {:?}", toml_str);
     
         // Deserialize into the Root struct
         let root: Root = toml::from_str(&toml_str).expect("Failed to deserialize palette.");
@@ -115,8 +116,6 @@ impl Fractal {
             .into_iter()
             .map(|entry| (entry.index, entry.color))
             .collect();
-    
-        println!("CONFIG: {:?}", self.col_palette);
         Ok(())
     }
 
@@ -146,6 +145,9 @@ impl Fractal {
             // Calculate divergence for row.
             self.cal_row_divergence(row, st_c);
         }
+
+        // Render the image according to divergence calculations.
+        self.render_image();
 
         // Report ok status and timing.
         self.generate_duration = generate_start.elapsed();
@@ -210,4 +212,97 @@ impl Fractal {
             self.escape_its[row as usize][col as usize] = num_its;
         }
     }
+
+    // Function to render the image according to the
+    // defined colour palette.
+    pub fn render_image(&mut self) {
+        info!("Rendering image according to colour palette.");
+
+        // We need to remove the path from the filename,
+        // as we are not interested in the original path.
+        let raw_filename = &self.settings.fractal_filename;
+
+        // Get file path for the file to be written.
+        // All files will be written to a specific folder.
+        let mut wrt_path = PathBuf::new();       
+        wrt_path.push(&self.settings.fractal_folder);
+        wrt_path.push(raw_filename);
+        let mut wrt_path_string = wrt_path.to_string_lossy().into_owned();
+
+        // Check if we are going to overwrite an existing file.
+        // If so we will add a suffix to the end of the file name
+        // to make it unique.
+        let mut suffix = 1;
+        let original_filename = wrt_path_string.clone();
+        while Path::new(&wrt_path_string).exists() {
+            // Construct next suffix.
+            let extension = match original_filename.rfind('.') {
+                Some(idx) => &original_filename[idx..],
+                None => "",
+            };
+            // Construct base file path.
+            let base_filename = if let Some(idx) = original_filename.rfind('.') {
+                &original_filename[..idx]
+            } else {
+                &original_filename
+            };
+            // Construct complete file name.
+            wrt_path_string = format!("{}-{:03}{}", base_filename, suffix, extension);
+            // Increment suffix if this file name exists.
+            suffix += 1;
+        }
+
+        // Define an image of the right size.
+        let rows = self.rows;
+        let cols = self.cols;
+        let mut img = RgbImage::new(cols, rows);
+
+        // Iterate through rows and columuns and
+        // set the pixel colour accordingly.
+        for y in 0..rows {
+            for x in 0..cols{
+                let pt_its: u32 = self.escape_its[y as usize][x as usize];
+                let px_col: Rgb<u8> = det_px_col(pt_its, &self.col_palette);
+                img.put_pixel(x, y, px_col);
+            }
+        }
+
+        // Save the image.
+        self.image_file = wrt_path_string.clone();
+        let _ = img.save(wrt_path_string);
+    }
+}
+
+// Function to determine the colour of the pixel.
+// Based on linear interpolation of colour palette.
+pub fn det_px_col(its: u32, col_pal: &Vec<(u32, (u8, u8, u8))>) -> Rgb<u8> {
+
+    // Iterate through the boundaries to find where `its` fits
+    // between consecutive boundaries.
+    for i in 0..col_pal.len() - 1 {
+        let (lower_bound, lower_color) = col_pal[i];
+        let (upper_bound, upper_color) = col_pal[i + 1];
+
+        if its > lower_bound && its <= upper_bound {
+            // Perform linear interpolation between the two colours.
+            let t = (its - lower_bound) as f32 / (upper_bound - lower_bound) as f32;
+            let r = (1.0 - t) * lower_color.0 as f32 + t * upper_color.0 as f32;
+            let g = (1.0 - t) * lower_color.1 as f32 + t * upper_color.1 as f32;
+            let b = (1.0 - t) * lower_color.2 as f32 + t * upper_color.2 as f32;
+
+            // Return interpolated colour for the pixel.
+            return Rgb([r as u8, g as u8, b as u8]);
+        }
+    }
+
+    // Handle the case where `its` doesn't fit into any range.
+    // For simplicity, return the last colour in the palette.
+    if let Some(&(last_bound, last_color)) = col_pal.last() {
+        if its > last_bound {
+            return Rgb([last_color.0, last_color.1, last_color.2]);
+        }
+    }
+
+    // Default fallback colour (e.g., black).
+    Rgb([0, 0, 0])
 }
