@@ -7,6 +7,8 @@ pub struct Settings {
     pub program_devs: Vec<String>,
     pub program_web: String,
     pub fractal_folder: String,
+    pub fractal_filename: String,
+    pub palette_folder: String,
 
     // Initial fractal setting.
     pub init_rows: u32,

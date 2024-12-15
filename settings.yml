@@ -4,11 +4,13 @@ program_ver:        0.0.1
 program_devs:       ["Michael Cvitanovich"]
 program_web:        "galacticwingcommander"    
 fractal_folder:     "./fractals"
+fractal_filename:   "fractal.png"
+palette_folder:     "./palettes"
 
 # Initial Mandlebrot plot.
-init_rows:          1024
-init_cols:          1024
+init_rows:          400
+init_cols:          600
 init_mid_pt_re:     -1.0
 init_mid_pt_im:     0.0
-init_pt_div:        0.000075
-init_max_its:       500
+init_pt_div:        0.0075
+init_max_its:       200

@@ -111,9 +111,14 @@ async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
     params.value6 = Some(params.value6.unwrap_or(settings.init_max_its));
     fractal.max_its = params.value6.unwrap();
 
+    // Initialise fractal.
+    fractal.init_fractal_image();
+
+    // Initialise colour palette.
+    let _ = fractal.init_col_pallete();
+
     // Generate the fractal.
     // and report status and payload to front end.
-    fractal.init_fractal_image();
     match fractal.generate_fractal(){
         Ok(_) => {
             let test_time_ms:f64 = fractal.generate_duration.as_millis() as f64 / 1000.0 as f64;
@@ -166,6 +171,7 @@ async fn main() -> std::io::Result<()> {
     // Create folders if they don't already exist.
     fs::create_dir_all("./logs")?;
     fs::create_dir_all("./fractals")?;
+    fs::create_dir_all("./palettes")?;
 
     // Logging configuration held in log4rs.yml .
     log4rs::init_file("log4rs.yml", Default::default()).unwrap();

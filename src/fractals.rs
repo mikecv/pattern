@@ -3,10 +3,12 @@
 use log::info;
 
 use num_complex::Complex;
+use serde::Deserialize;
 use std::f64::consts;
 use std::fmt;
 use std::time::{Instant, Duration};
-
+use std::fs::{self};
+use std::io::{self};
 use crate::settings::Settings;
 use crate::SETTINGS;
 
@@ -25,6 +27,18 @@ impl fmt::Display for FractalError {
     }
 }
 
+// Fractal colour palette formats.
+#[derive(Debug, Deserialize)]
+struct Root {
+    palette: Vec<PaletteEntry>,
+}
+
+#[derive(Debug, Deserialize)]
+struct PaletteEntry {
+    index: u32,
+    color: (u8, u8, u8),
+}
+
 // Struct of parameters for fractals generation.
 pub struct Fractal {
     pub settings: Settings,
@@ -37,7 +51,7 @@ pub struct Fractal {
     pub top_lim: f64,
     pub escape_its: Vec<Vec<u32>>,
     pub pt_lt: Complex<f64>,
-    pub col_palete: Vec<(u32, (u8, u8, u8))>,
+    pub col_palette: Vec<(u32, (u8, u8, u8))>,
     pub generate_duration: Duration,
     pub calc_duration: Duration,
     pub render_duration: Duration,
@@ -63,7 +77,7 @@ impl Fractal {
             top_lim: 0.0,
             escape_its: Vec::new(),
             pt_lt: Complex::new(0.0, 0.0),
-            col_palete: Vec::new(),
+            col_palette: Vec::new(),
             generate_duration: Duration::new(0, 0),
             calc_duration: Duration::new(0, 0),
             render_duration: Duration::new(0, 0),
@@ -85,6 +99,25 @@ impl Fractal {
         self.pt_lt.re = self.left_lim;
         self.pt_lt.im = self.top_lim;      
         self.escape_its = vec![vec![0; self.cols as usize]; self.rows as usize];
+    }
+
+    pub fn init_col_pallete(&mut self) -> io::Result<()> {
+        info!("Importing default colour palette.");
+    
+        let toml_str = fs::read_to_string("./palettes/default.palette")?;
+        println!("TOML: {:?}", toml_str);
+    
+        // Deserialize into the Root struct
+        let root: Root = toml::from_str(&toml_str).expect("Failed to deserialize palette.");
+        
+        // Map the palette entries into your desired format
+        self.col_palette = root.palette
+            .into_iter()
+            .map(|entry| (entry.index, entry.color))
+            .collect();
+    
+        println!("CONFIG: {:?}", self.col_palette);
+        Ok(())
     }
 
     // Method to generate fractal image.
