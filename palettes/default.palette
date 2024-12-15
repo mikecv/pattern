@@ -1,0 +1,7 @@
+[[palette]]
+index = 1
+color = [0, 0, 0]
+
+[[palette]]
+index = 200
+color = [0, 0, 255]
