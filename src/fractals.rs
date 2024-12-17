@@ -270,7 +270,7 @@ impl Fractal {
         // Save the image.
         let _ = img.save(wrt_path_string.clone());
 
-        // Save image filename without path for sending to back end.
+        // Save image filename without path for sending to file store.
         self.image_filename = wrt_path_string.clone();
         info!("Saving fractal image to: {:?}", wrt_path_string);
     }

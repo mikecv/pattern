@@ -131,7 +131,7 @@ async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
             let test_time_ms:f64 = fractal.generate_duration.as_millis() as f64 / 1000.0 as f64;
             let duration_str = format!("{:.3} sec", test_time_ms);
 
-            // Ensure only the filename (not path) is sent to the frontend.
+            // // Ensure only the filename (not path) is sent to the frontend.
             let image_filename = std::path::Path::new(&fractal.image_filename)
                 .file_name()
                 .unwrap_or_default()

@@ -41,12 +41,23 @@ document.getElementById('initializeButton').addEventListener('click', () => {
         document.getElementById('init_max_its').value = data.params.value6;
 
         if (data.generation === "True") {
+
+            // Filename of fractal image.
+            console.log('Fractal image: :', data.image);
+
+            // Display the generated image
+            const imageElement = document.getElementById("generatedImage");
+            const imageUrl = `./fractals/${data.image}`;
+            document.getElementById("fractalImage").src = imageUrl;
+            imageElement.style.display = "block";
+
+            // Time to perform fractal generation.
             console.log('Fractal generated in: :', data.time);
 
             // Update UI text boxes with status.
             document.getElementById('duration-box').value = data.time;
             document.getElementById('error-box').value = "Success";
-       } else {
+        } else {
             throw new Error(data.error);
         }
     })

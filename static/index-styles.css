@@ -14,6 +14,29 @@ h1 {
     max-width: 300px;
 }
 
+#generation-container {
+    display: flex;
+    align-items: flex-start; /* Align to the top */
+    justify-content: space-between; /* Space between parameters and image */
+    gap: 20px; /* Add space between the two sections */
+}
+
+#parameters-section {
+    flex: 1; /* Take up half of the container */
+}
+
+#image-section {
+    flex: 1; /* Take up half of the container */
+    text-align: center;
+}
+
+#fractalImage {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #ccc; /* Optional border for clarity */
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1); /* Optional shadow for style */
+}
+
 /* Style for each field (label and input pair) */
 .status-field,
 .parameter-field {
@@ -56,10 +79,4 @@ button {
 #result {
     text-align: center;
     margin-bottom: 20px;
-}
-
-/* Container for status boxes */
-#status-container {
-    text-align: left;
-    margin-top: 20px;
 }

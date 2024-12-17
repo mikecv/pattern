@@ -17,4 +17,5 @@ Cargo.lock
 # Application specific.
 *.code-workspace
 /logs/*
+/fractals/*
 notes.txt
