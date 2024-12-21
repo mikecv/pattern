@@ -15,70 +15,64 @@ h1 {
 }
 
 #parameters-section {
-    width: 300px !important; /* Force fixed width */
-    flex: none !important; /* Prevent resizing or sharing space */
-    background-color: rgba(0, 0, 255, 0.2); /* Light blue for visual debugging */
-    border: 2px solid blue; /* Blue border for debugging */
+    width: 250px !important;
+    flex: none !important;
 }
 
 #image-section {
-    flex: 1 !important; /* Take the remaining space */
-    display: flex; /* Use flexbox for centering */
-    justify-content: center; /* Center horizontally */
-    align-items: center; /* Center vertically (optional, if needed) */
-    background-color: rgba(0, 255, 0, 0.2); /* Light green for visual debugging */
-    border: 2px solid green; /* Green border for debugging */
+    flex: 1 !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #generation-container {
-    display: flex !important; /* Enforce flex layout */
-    gap: 20px; /* Add spacing between sections */
-    width: 100% !important; /* Ensure full width of the screen */
-    box-sizing: border-box; /* Include padding/border in width calculation */
-    border: 2px solid red; /* Red border for debugging */
+    display: flex !important;
+    gap: 20px;
+    width: 100% !important;
 }
 
 #fractalImage {
-    max-width: 100%; /* Ensure the image scales responsively */
-    height: auto; /* Maintain aspect ratio */
-    margin: auto; /* Center the image if block layout is used */
+    max-width: 100%;
+    height: auto;
+    margin: auto;
 }
 
 /* Style for each field (label and input pair) */
 .status-field,
 .parameter-field {
-    margin-bottom: 10px; /* Controls spacing between field blocks */
+    margin-bottom: 10px;
     display: flex;
-    flex-direction: column; /* Stack label and input vertically */
+    flex-direction: column;
 }
 
 /* Label styling */
 .status-field label,
 .parameter-field label {
-    font-size: 10px;
+    font-size: 15px;
     font-weight: bold;
-    margin-bottom: 5px; /* Space between label and input box */
+    margin-bottom: 5px;
     text-align: left;
 }
 
 /* Input box styling */
 .status-field input,
 .parameter-field input {
-    width: 100%; /* Ensures input box fits container */
+    width: 100%;
     padding: 5px;
     outline: 1px solid gray;
     border-radius: 4px;
     background-color: #f9f9f9;
     border: 1px solid #ccc;
-    font-size: 10px;
-    box-sizing: border-box; /* Ensures padding doesn't exceed width */
+    font-size: 15px;
+    box-sizing: border-box;
 }
 
 /* Button styling */
 button {
     padding: 5px 10px;
     margin-top: 10px;
-    font-size: 13px;
+    font-size: 15px;
     font-weight: bold;
 }
 

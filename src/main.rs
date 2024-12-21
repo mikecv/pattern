@@ -90,6 +90,9 @@ async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
     // Get access to steg instance.
     let mut fractal = fractal.lock().unwrap();
 
+    // Initialise fractal.
+    fractal.init_fractal_image();
+
     // Access parameters.
     // Check if any parameters are set to none type,
     // if so, set to default setting.
@@ -118,8 +121,9 @@ async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
     params.value6 = Some(params.value6.unwrap_or(settings.init_max_its));
     fractal.max_its = params.value6.unwrap();
 
-    // Initialise fractal.
-    fractal.init_fractal_image();
+    // Initialise fractal limits.
+    //  Require the fractal parameters to be initialised beforehand.
+    fractal.init_fractal_limits();
 
     // Initialise colour palette.
     let _ = fractal.init_col_pallete();
