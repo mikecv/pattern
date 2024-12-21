@@ -46,7 +46,7 @@ document.getElementById('initializeButton').addEventListener('click', () => {
             console.log('Fractal image: :', data.image);
 
             // Display the generated image
-            const imageElement = document.getElementById("generatedImage");
+            const imageElement = document.getElementById("fractalImage");
             const imageUrl = `./fractals/${data.image}`;
             document.getElementById("fractalImage").src = imageUrl;
             imageElement.style.display = "block";

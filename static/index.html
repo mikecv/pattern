@@ -12,6 +12,7 @@
     <h1>Fractals</h1>
 
     <div class="container">
+        <!-- Main Generation Container -->
         <div id="generation-container" style="display: flex; align-items: flex-start;">
             <!-- Parameters Section -->
             <div id="parameters-section" style="flex: 1;">
@@ -51,15 +52,15 @@
                     </div>
                 </div>
             </div>
-        </div>
     
-        <!-- Image Section -->
-        <div id="image-section" style="flex: 1; text-align: center;">
-            <img id="fractalImage" src="" alt="Generated Fractal Image" style="max-width: 100%; height: auto; border: 1px solid #ccc;">
-            <p id="fractalFilename"></p>
+            <!-- Image Section -->
+            <div id="image-section" style="flex: 1; text-align: center;">
+                <img id="fractalImage" src="" alt="Generated Fractal Image" style="max-width: 100%; height: auto; border: 1px solid #ccc;">
+                <p id="fractalFilename"></p>
+            </div>
         </div>
     </div>
-
+    
     <script>
         // Embed default values as variables for the external JS to use.
         window.defaults = {
