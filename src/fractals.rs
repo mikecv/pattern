@@ -56,7 +56,7 @@ pub struct Fractal {
     pub pt_lt: Complex<f64>,
     pub col_palette: Vec<(u32, (u8, u8, u8))>,
     pub generate_duration: Duration,
-    pub image_file: String,
+    pub image_filename: String,
 }
 
 // Initialise all struct variables.
@@ -81,7 +81,7 @@ impl Fractal {
             pt_lt: Complex::new(0.0, 0.0),
             col_palette: Vec::new(),
             generate_duration: Duration::new(0, 0),
-            image_file: String::from(""),
+            image_filename: String::from(""),
         }
     }
 
@@ -95,11 +95,18 @@ impl Fractal {
         let mid_pt_im:f64 = self.settings.init_mid_pt_im;
         self.mid_pt = Complex::new(mid_pt_re, mid_pt_im);
         self.max_its = self.settings.init_max_its;
+        self.escape_its = vec![vec![0; self.cols as usize]; self.rows as usize];
+    }
+
+
+    // Method to initialize fractal limits.
+    // Need the fractal parameters initialised first.
+    pub fn init_fractal_limits(&mut self) {
+        info!("Initialising fractal limits.");
         self.left_lim = self.mid_pt.re - (self.cols as f64 / 2.0) * self.pt_div;
         self.top_lim = self.mid_pt.im + (self.rows as f64 / 2.0) * self.pt_div;
         self.pt_lt.re = self.left_lim;
         self.pt_lt.im = self.top_lim;      
-        self.escape_its = vec![vec![0; self.cols as usize]; self.rows as usize];
     }
 
     pub fn init_col_pallete(&mut self) -> io::Result<()> {
@@ -268,8 +275,11 @@ impl Fractal {
         }
 
         // Save the image.
-        self.image_file = wrt_path_string.clone();
-        let _ = img.save(wrt_path_string);
+        let _ = img.save(wrt_path_string.clone());
+
+        // Save image filename without path for sending to file store.
+        self.image_filename = wrt_path_string.clone();
+        info!("Saving fractal image to: {:?}", wrt_path_string);
     }
 }
 
