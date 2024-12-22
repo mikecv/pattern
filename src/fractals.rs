@@ -56,6 +56,7 @@ pub struct Fractal {
     pub pt_lt: Complex<f64>,
     pub col_palette: Vec<(u32, (u8, u8, u8))>,
     pub generate_duration: Duration,
+    pub recentre_duration: Duration,
     pub image_filename: String,
 }
 
@@ -81,6 +82,7 @@ impl Fractal {
             pt_lt: Complex::new(0.0, 0.0),
             col_palette: Vec::new(),
             generate_duration: Duration::new(0, 0),
+            recentre_duration: Duration::new(0, 0),
             image_filename: String::from(""),
         }
     }
@@ -218,6 +220,22 @@ impl Fractal {
             // Save number of iterations at the point point.
             self.escape_its[row as usize][col as usize] = num_its;
         }
+    }
+
+    // Method to recentre fractal image.
+    pub fn recentre_fractal(&mut self, c_row: u32, c_col: u32) -> Result<(), FractalError> {
+        info!("Recentreing fractal.");
+
+        println!("Recentering to: ({:?}, {:?})", c_row, c_col);
+
+        // Initialise timer for function.
+        let recentre_start = Instant::now();
+
+        // Report ok status and timing.
+        self.recentre_duration = recentre_start.elapsed();
+        info!("Time to recentre fractal: {:?}", self.generate_duration);
+
+        Ok(())
     }
 
     // Function to render the image according to the

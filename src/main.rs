@@ -80,6 +80,13 @@ struct FractalParams {
     value6: Option<u32>,
 }
 
+// Define structure for fractal recentre payload.
+#[derive(Deserialize, Serialize, Debug, Clone)]
+struct FractalCentre {
+    centre_col: u32,
+    centre_row: u32,
+}
+
 #[post("/generate")]
 async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<Arc<Mutex<Fractal>>>,) -> impl Responder {
     info!("Invoking fractal generation endpoint.");
@@ -130,7 +137,7 @@ async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
 
     // Generate the fractal.
     // Report status and payload to front end.
-    match fractal.generate_fractal(){
+    match fractal.generate_fractal() {
         Ok(_) => {
             let test_time_ms:f64 = fractal.generate_duration.as_millis() as f64 / 1000.0 as f64;
             let duration_str = format!("{:.3} sec", test_time_ms);
@@ -173,61 +180,28 @@ async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
 }
 
 #[post("/recentre")]
-async fn recentre(fractal_params: web::Json<FractalParams>, fractal: web::Data<Arc<Mutex<Fractal>>>,) -> impl Responder {
-    info!("Invoking fractal generation endpoint.");
+async fn recentre(fractal_centre: web::Json<FractalCentre>, fractal: web::Data<Arc<Mutex<Fractal>>>,) -> impl Responder {
+    info!("Invoking fractal recentre endpoint.");
 
     // Get application settings in scope.
-    let settings: Settings = SETTINGS.lock().unwrap().clone();
+    // Currently not used.
+    let _settings: Settings = SETTINGS.lock().unwrap().clone();
 
     // Get access to steg instance.
     let mut fractal = fractal.lock().unwrap();
 
-    // Initialise fractal.
-    fractal.init_fractal_image();
-
-    // Access parameters.
-    // Check if any parameters are set to none type,
-    // if so, set to default setting.
-    let mut params = fractal_params.into_inner();
-
-    // Parameter 1.
-    params.value1 = Some(params.value1.unwrap_or(settings.init_rows));
-    fractal.rows = params.value1.unwrap();
-
-    // Parameter 2.
-    params.value2 = Some(params.value2.unwrap_or(settings.init_cols));
-    fractal.cols = params.value2.unwrap();
-
-    // Parameter 3 & 4
-    params.value3 = Some(params.value3.unwrap_or(settings.init_mid_pt_re));
-    let mid_pt_re = params.value3.unwrap();
-    params.value4 = Some(params.value4.unwrap_or(settings.init_mid_pt_im));
-    let mid_pt_im = params.value4.unwrap(); 
-    fractal.mid_pt = Complex::new(mid_pt_re, mid_pt_im);
-
-    // Parameter 5.
-    params.value5 = Some(params.value5.unwrap_or(settings.init_pt_div));
-    fractal.pt_div = params.value5.unwrap();
-
-    // Parameter 6.
-    params.value6 = Some(params.value6.unwrap_or(settings.init_max_its));
-    fractal.max_its = params.value6.unwrap();
-
-    // Initialise fractal limits.
-    // Require the fractal parameters to be initialised beforehand.
-    fractal.init_fractal_limits();
-
-    // Initialise colour palette.
-    let _ = fractal.init_col_pallete();
+    // Access fractal new centrepoint.
+    // New centre point row/col is just used to potentially speeding up
+    // the generation by only generating new pixels (not moved ones).
+    let centre_point = fractal_centre.into_inner();
+    let centre_row = centre_point.centre_row;
+    let centre_col = centre_point.centre_col;
+    info!("Recentering to x:{:?} y:{:?}", centre_col, centre_row);
 
     // Recentre and generate the fractal.
     // Report status and payload to front end.
-    
-    // <<TODO>> Temporarily just generate without recentre.
-    // <<TODO>> Replace with (new) recentre function and then generation when ready.
-    // <<TODO>> Generation time to include recentre as well.
 
-    match fractal.generate_fractal(){
+    match fractal.recentre_fractal(centre_row, centre_col) {
         Ok(_) => {
             let test_time_ms:f64 = fractal.generate_duration.as_millis() as f64 / 1000.0 as f64;
             let duration_str = format!("{:.3} sec", test_time_ms);
@@ -243,7 +217,6 @@ async fn recentre(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
                 "recentred": "True",
                 "time": duration_str,
                 "error": "Success",
-                "params": params,
                 "image": image_filename,
             });
 
@@ -260,7 +233,6 @@ async fn recentre(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
                 "recentred": "False",
                 "time": duration_str,
                 "error": e.to_string(),
-                "params": params,
             });
 
              // Respond with status to display on UI.

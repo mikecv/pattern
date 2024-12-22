@@ -103,8 +103,8 @@ fractalImage.addEventListener("click", (event) => {
 
     // Get image and click coordinates.
     const rect = fractalImage.getBoundingClientRect();
-    const clickX = event.clientX - rect.left;
-    const clickY = event.clientY - rect.top;
+    const centre_col = event.clientX - rect.left;
+    const centre_row = event.clientY - rect.top;
     const value1 = parseInt(document.getElementById('init_rows').value);
     const value2 = parseInt(document.getElementById('init_cols').value);
     const value3 = parseFloat(document.getElementById('init_mid_pt_re').value);
@@ -119,15 +119,15 @@ fractalImage.addEventListener("click", (event) => {
     const currentCentreIm = parseFloat(document.getElementById("init_mid_pt_im").value);
     const pixelDivision = parseFloat(document.getElementById("init_pt_div").value);
 
-    const newCentreRe = currentCentreRe + (clickX - fractalWidth / 2) * pixelDivision;
-    const newCentreIm = currentCentreIm - (clickY - fractalHeight / 2) * pixelDivision;
+    const newCentreRe = currentCentreRe + (centre_row - fractalWidth / 2) * pixelDivision;
+    const newCentreIm = currentCentreIm - (centre_col - fractalHeight / 2) * pixelDivision;
 
     // Update input fields with new centre.
     document.getElementById("init_mid_pt_re").value = newCentreRe.toFixed(6);
     document.getElementById("init_mid_pt_im").value = newCentreIm.toFixed(6);
 
     // Log the selected (new) row and column.
-    console.log(`Selected centre point: x=${clickX}, y=${clickY}`);
+    console.log(`Selected centre point: x=${centre_row}, y=${centre_col}`);
 
     // Exit Recentre mode and (optionally) regenerate fractal.
     isRecentreMode = false;
@@ -140,19 +140,19 @@ fractalImage.addEventListener("click", (event) => {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ value1, value2, value3, value4, value5, value6 }),
+        body: JSON.stringify({ centre_row, centre_col }),
     })
     .then(response => response.json())
     .then(data => {
         console.log("Recentre image endpoint reached.");
         // Update the fractal parameters as they may have changed.
         // Just update the existing fields.
-        document.getElementById('init_rows').value = data.params.value1;
-        document.getElementById('init_cols').value = data.params.value2;
-        document.getElementById('init_mid_pt_re').value = data.params.value3;
-        document.getElementById('init_mid_pt_im').value = data.params.value4;
-        document.getElementById('init_pt_div').value = data.params.value5;
-        document.getElementById('init_max_its').value = data.params.value6;
+        // document.getElementById('init_rows').value = data.params.value1;
+        // document.getElementById('init_cols').value = data.params.value2;
+        // document.getElementById('init_mid_pt_re').value = data.params.value3;
+        // document.getElementById('init_mid_pt_im').value = data.params.value4;
+        // document.getElementById('init_pt_div').value = data.params.value5;
+        // document.getElementById('init_max_its').value = data.params.value6;
 
         if (data.recentred === "True") {
 
