@@ -122,20 +122,20 @@ async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
     fractal.max_its = params.value6.unwrap();
 
     // Initialise fractal limits.
-    //  Require the fractal parameters to be initialised beforehand.
+    // Require the fractal parameters to be initialised beforehand.
     fractal.init_fractal_limits();
 
     // Initialise colour palette.
     let _ = fractal.init_col_pallete();
 
     // Generate the fractal.
-    // and report status and payload to front end.
+    // Report status and payload to front end.
     match fractal.generate_fractal(){
         Ok(_) => {
             let test_time_ms:f64 = fractal.generate_duration.as_millis() as f64 / 1000.0 as f64;
             let duration_str = format!("{:.3} sec", test_time_ms);
 
-            // // Ensure only the filename (not path) is sent to the frontend.
+            // Ensure only the filename (not path) is sent to the frontend.
             let image_filename = std::path::Path::new(&fractal.image_filename)
                 .file_name()
                 .unwrap_or_default()
@@ -171,7 +171,104 @@ async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
         }
     }
 }
+
+#[post("/recentre")]
+async fn recentre(fractal_params: web::Json<FractalParams>, fractal: web::Data<Arc<Mutex<Fractal>>>,) -> impl Responder {
+    info!("Invoking fractal generation endpoint.");
+
+    // Get application settings in scope.
+    let settings: Settings = SETTINGS.lock().unwrap().clone();
+
+    // Get access to steg instance.
+    let mut fractal = fractal.lock().unwrap();
+
+    // Initialise fractal.
+    fractal.init_fractal_image();
+
+    // Access parameters.
+    // Check if any parameters are set to none type,
+    // if so, set to default setting.
+    let mut params = fractal_params.into_inner();
+
+    // Parameter 1.
+    params.value1 = Some(params.value1.unwrap_or(settings.init_rows));
+    fractal.rows = params.value1.unwrap();
+
+    // Parameter 2.
+    params.value2 = Some(params.value2.unwrap_or(settings.init_cols));
+    fractal.cols = params.value2.unwrap();
+
+    // Parameter 3 & 4
+    params.value3 = Some(params.value3.unwrap_or(settings.init_mid_pt_re));
+    let mid_pt_re = params.value3.unwrap();
+    params.value4 = Some(params.value4.unwrap_or(settings.init_mid_pt_im));
+    let mid_pt_im = params.value4.unwrap(); 
+    fractal.mid_pt = Complex::new(mid_pt_re, mid_pt_im);
+
+    // Parameter 5.
+    params.value5 = Some(params.value5.unwrap_or(settings.init_pt_div));
+    fractal.pt_div = params.value5.unwrap();
+
+    // Parameter 6.
+    params.value6 = Some(params.value6.unwrap_or(settings.init_max_its));
+    fractal.max_its = params.value6.unwrap();
+
+    // Initialise fractal limits.
+    // Require the fractal parameters to be initialised beforehand.
+    fractal.init_fractal_limits();
+
+    // Initialise colour palette.
+    let _ = fractal.init_col_pallete();
+
+    // Recentre and generate the fractal.
+    // Report status and payload to front end.
     
+    // <<TODO>> Temporarily just generate without recentre.
+    // <<TODO>> Replace with (new) recentre function and then generation when ready.
+    // <<TODO>> Generation time to include recentre as well.
+
+    match fractal.generate_fractal(){
+        Ok(_) => {
+            let test_time_ms:f64 = fractal.generate_duration.as_millis() as f64 / 1000.0 as f64;
+            let duration_str = format!("{:.3} sec", test_time_ms);
+
+            // Ensure only the filename (not path) is sent to the frontend.
+            let image_filename = std::path::Path::new(&fractal.image_filename)
+                .file_name()
+                .unwrap_or_default()
+                .to_string_lossy()
+                .into_owned();
+
+            let response_data = json!({
+                "recentred": "True",
+                "time": duration_str,
+                "error": "Success",
+                "params": params,
+                "image": image_filename,
+            });
+
+             // Respond with status to display on UI.
+             HttpResponse::Ok().json(response_data)
+        }
+        Err(e) => {
+            // Fractal recentre and generation failed, respond with error.
+
+            let test_time_ms:f64 = fractal.generate_duration.as_millis() as f64 / 1000.0 as f64;
+            let duration_str = format!("{:.3} sec", test_time_ms);
+
+            let response_data = json!({
+                "recentred": "False",
+                "time": duration_str,
+                "error": e.to_string(),
+                "params": params,
+            });
+
+             // Respond with status to display on UI.
+             HttpResponse::InternalServerError().json(response_data)
+        }
+    }
+}
+
 async fn help(settings: web::Data<Settings>) -> impl Responder {
     // Help endpoint function.
     // Read the help file.
@@ -211,7 +308,8 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(settings.clone()))
             .service(fsx::Files::new("/fractals", "./fractals").show_files_listing())
             .service(intro)
-            .service(generate) // The `generate` handler for `/generate` endpoint
+            .service(generate)
+            .service(recentre)
             .service(actix_files::Files::new("/static", "./static").show_files_listing())
             .route("/help", web::get().to(help))
             .route("/fractals/{filename}", web::get().to(serve_image))
