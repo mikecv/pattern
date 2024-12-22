@@ -1,6 +1,6 @@
 // Javascript UI functions.
 
-// Access the default values from the `window` object
+// Access the default values from the `window` object.
 const defaults = window.defaults;
 
 window.onload = () => {
@@ -26,7 +26,7 @@ document.getElementById('generateButton').addEventListener('click', () => {
     const durationBox = document.getElementById("duration-box");
     durationBox.value = "";
 
-    // Set the status field to "Pending..."
+    // Set the status field to "Pending..." while we wait for back-end to process.
     const statusBox = document.getElementById("error-box");
     statusBox.value = "Pending...";
 
@@ -79,15 +79,16 @@ document.getElementById('generateButton').addEventListener('click', () => {
         alert("Failed to generate fractal.");
     });});
 
-    const recentreButton = document.getElementById("recentreButton");
+const recentreButton = document.getElementById("recentreButton");
 const fractalImage = document.getElementById("fractalImage");
 
 let isRecentreMode = false;
 
+// Listener if user selects to recentre the image.
 recentreButton.addEventListener("click", () => {
     isRecentreMode = !isRecentreMode;
 
-    // Toggle crosshair cursor
+    // Toggle crosshair cursor.
     if (isRecentreMode) {
         fractalImage.classList.add("crosshair-cursor");
         recentreButton.textContent = "Cancel Recentre";
@@ -100,7 +101,7 @@ recentreButton.addEventListener("click", () => {
 fractalImage.addEventListener("click", (event) => {
     if (!isRecentreMode) return;
 
-    // Get image and click coordinates
+    // Get image and click coordinates.
     const rect = fractalImage.getBoundingClientRect();
     const clickX = event.clientX - rect.left;
     const clickY = event.clientY - rect.top;
@@ -115,13 +116,20 @@ fractalImage.addEventListener("click", (event) => {
     const newCentreRe = currentCentreRe + (clickX - fractalWidth / 2) * pixelDivision;
     const newCentreIm = currentCentreIm - (clickY - fractalHeight / 2) * pixelDivision;
 
-    // Update input fields with new centre
+    // Update input fields with new centre.
     document.getElementById("init_mid_pt_re").value = newCentreRe.toFixed(6);
     document.getElementById("init_mid_pt_im").value = newCentreIm.toFixed(6);
 
-    // Exit Recentre mode and regenerate fractal
+    // Log the selected row and column
+    console.log(`Selected point: x=${clickX}, y=${clickY}`);
+
+    // Exit Recentre mode and (optionally) regenerate fractal.
     isRecentreMode = false;
     fractalImage.classList.remove("crosshair-cursor");
     recentreButton.textContent = "Recentre";
-    document.getElementById("initializeButton").click(); // Trigger fractal generation
+    // If desired to automatically generate a new image after recentering,
+    // then uncomment the following line.
+    // If you want to leave it to the generate button then comment out.
+    //
+    // document.getElementById("generateButton").click();
 });

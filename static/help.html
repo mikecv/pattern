@@ -15,12 +15,29 @@
    </head>
    <body>
 
-      <h1>Fractals</h1>
-      <p style="text-align:center; font-weight: bold;">Fractals</p>
-      <p style="text-align:center;">A Fractals Application.</p>
-      <p style="text-align:center;">By: galacticwingcommander@gmail.com</p>
-      <p style="text-align:center;">Version {{version}}</p>
-      <p style="text-align:center;">(MMCCXXIV)</p>
+      <div id="mySidebar" class="sidebar">
+         <a href="javascript:void(0)" class="closebtn" onclick="hide()">×</a>
+         <a href="#Introduction">Introduction</a>
+         <a href="#About">About</a>
+      </div>
+      <div id="content" style="padding-left: 50px;">
+         <button class="openbtn" id="openbtn" onclick="show()">☰</button>
 
+         <h1>Fractals</h1>
+
+         <a id="Introduction"></a>
+         <h2>Introduction</h2>
+         <p>This application is for exploring the world of fractals,
+            in particular, the Mandlebrot set.
+
+         <a id="About"></a>
+         <h2>About</h2>
+         <p style="text-align:center; font-weight: bold;">Fractals</p>
+         <p style="text-align:center;">A Fractals Application.</p>
+         <p style="text-align:center;">By: galacticwingcommander@gmail.com</p>
+         <p style="text-align:center;">Version {{version}}</p>
+         <p style="text-align:center;">(MMCCXXIV)</p>
+
+      </div>
    </body>
 </html>
