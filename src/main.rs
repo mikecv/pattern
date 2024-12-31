@@ -85,6 +85,8 @@ struct FractalParams {
 struct FractalCentre {
     centre_col: u32,
     centre_row: u32,
+    new_centre_re: f64,
+    new_centre_im: f64,
 }
 
 #[post("/generate")]
@@ -119,6 +121,7 @@ async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
     params.value4 = Some(params.value4.unwrap_or(settings.init_mid_pt_im));
     let mid_pt_im = params.value4.unwrap(); 
     fractal.mid_pt = Complex::new(mid_pt_re, mid_pt_im);
+    info!("Original centre x:{:?} y:{:?}", mid_pt_re, mid_pt_im);
 
     // Parameter 5.
     params.value5 = Some(params.value5.unwrap_or(settings.init_pt_div));
@@ -182,6 +185,7 @@ async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
 #[post("/recentre")]
 async fn recentre(fractal_centre: web::Json<FractalCentre>, fractal: web::Data<Arc<Mutex<Fractal>>>,) -> impl Responder {
     info!("Invoking fractal recentre endpoint.");
+    println!("Invoking fractal recentre endpoint.");
 
     // Get application settings in scope.
     // Currently not used.
@@ -196,11 +200,17 @@ async fn recentre(fractal_centre: web::Json<FractalCentre>, fractal: web::Data<A
     let centre_point = fractal_centre.into_inner();
     let centre_row = centre_point.centre_row;
     let centre_col = centre_point.centre_col;
-    info!("Recentering to x:{:?} y:{:?}", centre_col, centre_row);
+    info!("Recentring to col:{:?} row:{:?}", centre_col, centre_row);
+
+    // Also set new real/imaginary coordinates of centre point for
+    // generating new panned fractal image.
+    let mid_pt_re:f64 = centre_point.new_centre_re;
+    let mid_pt_im:f64 = centre_point.new_centre_im;
+    fractal.mid_pt = Complex::new(mid_pt_re, mid_pt_im);
+    info!("Recentring to x:{:?} y:{:?}", mid_pt_re, mid_pt_im);
 
     // Recentre and generate the fractal.
     // Report status and payload to front end.
-
     match fractal.recentre_fractal(centre_row, centre_col) {
         Ok(_) => {
             let test_time_ms:f64 = fractal.generate_duration.as_millis() as f64 / 1000.0 as f64;

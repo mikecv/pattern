@@ -224,9 +224,7 @@ impl Fractal {
 
     // Method to recentre fractal image.
     pub fn recentre_fractal(&mut self, c_row: u32, c_col: u32) -> Result<(), FractalError> {
-        info!("Recentreing fractal.");
-
-        println!("Recentering to: ({:?}, {:?})", c_row, c_col);
+        info!("Recentring fractal to: (row:{:?}, col:{:?})", c_row, c_col);
 
         // Initialise timer for function.
         let recentre_start = Instant::now();
