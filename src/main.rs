@@ -135,7 +135,7 @@ async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
     // Require the fractal parameters to be initialised beforehand.
     fractal.init_fractal_limits();
 
-    // Initialise colour palette.
+    // Initialise colour palette as it may have changed.
     let _ = fractal.init_col_pallete();
 
     // Generate the fractal.
@@ -207,6 +207,9 @@ async fn recentre(fractal_centre: web::Json<FractalCentre>, fractal: web::Data<A
     let mid_pt_im:f64 = centre_point.new_centre_im;
     fractal.mid_pt = Complex::new(mid_pt_re, mid_pt_im);
     info!("Recentring to x:{:?} y:{:?}", mid_pt_re, mid_pt_im);
+
+    // Initialise colour palette as it may have changed.
+    let _ = fractal.init_col_pallete();
 
     // Recentre and generate the fractal.
     // Report status and payload to front end.
