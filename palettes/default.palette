@@ -5,15 +5,15 @@ color = [0, 0, 0]
 
 [[palette]]
 rel_index = 0.5
-index = 150
+index = 0
 color = [0, 255, 0]
 
 [[palette]]
 rel_index = 0.7
-index = 150
+index = 0
 color = [255, 0, 0]
 
 [[palette]]
 rel_index = 1.0
-index = 200
+index = 0
 color = [0, 0, 255]

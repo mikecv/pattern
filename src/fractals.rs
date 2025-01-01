@@ -101,7 +101,6 @@ impl Fractal {
         self.escape_its = vec![vec![0; self.cols as usize]; self.rows as usize];
     }
 
-
     // Method to initialize fractal limits.
     // Need the fractal parameters initialised first.
     pub fn init_fractal_limits(&mut self) {
@@ -122,7 +121,6 @@ impl Fractal {
         let col_path_string = col_path.to_string_lossy().into_owned();
 
         // Read default palette from toml file.
-        // let toml_str = fs::read_to_string("./palettes/default.palette")?;
         let toml_str = fs::read_to_string(&col_path_string)?;
 
         // Deserialize into the Root struct
@@ -136,11 +134,12 @@ impl Fractal {
 
         // Scale colour palette according to max iterations.
         for col_bound in 0..self.col_palette.len() {
-            let (lower_rel_index, mut lower_bound, _lower_color) = self.col_palette[col_bound];
-            println!("({:?}) - {:?} - {:?}", col_bound, lower_rel_index, lower_bound);
+            let (lower_rel_index, _lower_bound, _lower_color) = self.col_palette[col_bound];
 
-            lower_bound = (lower_rel_index * self.max_its as f32) as u32;
-            println!("({:?}') - {:?} - {:?}", col_bound, lower_rel_index, lower_bound);
+            // lower_bound = (lower_rel_index * self.max_its as f32) as u32;
+            // self.col_palette[col_bound].1 = lower_bound;
+            // lower_bound = (lower_rel_index * self.max_its as f32) as u32;
+            self.col_palette[col_bound].1 = (lower_rel_index * self.max_its as f32) as u32;
         }
         
         Ok(())
@@ -154,9 +153,6 @@ impl Fractal {
         let generate_start = Instant::now();
 
         // Generate fractal image.
-        // Return an error code if fail to generate, e.g.
-        // return Err(FractalError::NotGenerated);
-
         // Start with the left top point.
         let mut st_c: Complex<f64> = self.pt_lt;
 
