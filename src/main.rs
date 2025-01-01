@@ -185,7 +185,6 @@ async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
 #[post("/recentre")]
 async fn recentre(fractal_centre: web::Json<FractalCentre>, fractal: web::Data<Arc<Mutex<Fractal>>>,) -> impl Responder {
     info!("Invoking fractal recentre endpoint.");
-    println!("Invoking fractal recentre endpoint.");
 
     // Get application settings in scope.
     // Currently not used.

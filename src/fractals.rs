@@ -114,9 +114,16 @@ impl Fractal {
     pub fn init_col_pallete(&mut self) -> io::Result<()> {
         info!("Importing default colour palette.");
 
+        // Create path to default palette file.
+        let mut col_path = PathBuf::new();       
+        col_path.push(&self.settings.palette_folder);
+        col_path.push(&self.settings.def_palette);
+        let col_path_string = col_path.to_string_lossy().into_owned();
+
         // Read default palette from toml file.
-        let toml_str = fs::read_to_string("./palettes/default.palette")?;
-    
+        // let toml_str = fs::read_to_string("./palettes/default.palette")?;
+        let toml_str = fs::read_to_string(&col_path_string)?;
+
         // Deserialize into the Root struct
         let root: Root = toml::from_str(&toml_str).expect("Failed to deserialize palette.");
         
@@ -166,7 +173,7 @@ impl Fractal {
     }
 
     // Methed to calculate fractal divergence at a single point.
-    // For points that reach the iteration count caculate
+    // For points that reach the iteration count calculate
     // fractional divergence.
     pub fn cal_row_divergence(&mut self, row: u32, st_c: Complex<f64>) {
         // Iterante over all the columns in the row.
@@ -229,11 +236,25 @@ impl Fractal {
         // Initialise timer for function.
         let recentre_start = Instant::now();
 
-        // Report ok status and timing.
-        self.recentre_duration = recentre_start.elapsed();
-        info!("Time to recentre fractal: {:?}", self.generate_duration);
+        // Re-initialise fractal parameters according to new
+        // re-centred fractal.
+        self.init_fractal_limits();
 
-        Ok(())
+        // Generate fractal at recentred point.
+        match self.generate_fractal() {
+            Ok(_) => {
+            
+                // Report ok status and timing.
+                self.recentre_duration = recentre_start.elapsed();
+                info!("Time to recentre fractal: {:?}", self.generate_duration);
+
+                Ok(())
+            }
+            Err(_e) => {
+                // Fractal generation failed, respond with error.
+                return Err(FractalError::NotGenerated);
+            }
+        }
     }
 
     // Function to render the image according to the
@@ -280,7 +301,7 @@ impl Fractal {
         let cols = self.cols;
         let mut img = RgbImage::new(cols, rows);
 
-        // Iterate through rows and columuns and
+        // Iterate through rows and columns and
         // set the pixel colour accordingly.
         for y in 0..rows {
             for x in 0..cols{

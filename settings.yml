@@ -6,6 +6,7 @@ program_web:        "galacticwingcommander"
 fractal_folder:     "./fractals"
 fractal_filename:   "fractal.png"
 palette_folder:     "./palettes"
+def_palette:        "default.palette"
 
 # Initial Mandlebrot plot.
 init_rows:          400
