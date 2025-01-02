@@ -9,6 +9,7 @@ pub struct Settings {
     pub fractal_folder: String,
     pub fractal_filename: String,
     pub palette_folder: String,
+    pub def_palette: String,
 
     // Initial fractal setting.
     pub init_rows: u32,

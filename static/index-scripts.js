@@ -40,7 +40,7 @@ document.getElementById('generateButton').addEventListener('click', () => {
     })
     .then(response => response.json())
     .then(data => {
-        console.log("Generation data enpoint reached.");
+        console.log("Generate data endpoint reached.");
         // Update the fractal parameters as they may have changed.
         // Just update the existing fields.
         document.getElementById('init_rows').value = data.params.value1;
@@ -55,7 +55,7 @@ document.getElementById('generateButton').addEventListener('click', () => {
             // Filename of fractal image.
             console.log('Fractal image: :', data.image);
 
-            // Display the generated image
+            // Display the generated image.
             const imageElement = document.getElementById("fractalImage");
             const imageUrl = `./fractals/${data.image}`;
             document.getElementById("fractalImage").src = imageUrl;
@@ -66,7 +66,7 @@ document.getElementById('generateButton').addEventListener('click', () => {
 
             // Update UI text boxes with status.
             document.getElementById('duration-box').value = data.time;
-            document.getElementById('error-box').value = "Success";
+            document.getElementById('error-box').value = "Fractal generation successful.";
         } else {
             throw new Error(data.error);
         }
@@ -103,33 +103,81 @@ fractalImage.addEventListener("click", (event) => {
 
     // Get image and click coordinates.
     const rect = fractalImage.getBoundingClientRect();
-    const clickX = event.clientX - rect.left;
-    const clickY = event.clientY - rect.top;
+    const centre_col = event.clientX - rect.left;
+    const centre_row = event.clientY - rect.top;
+    console.log(`Initial centre point: row:${centre_row}, col:${centre_col}`);
 
-    // Map pixel coordinates to fractal coordinates
+    const value1 = parseInt(document.getElementById('init_rows').value);
+    const value2 = parseInt(document.getElementById('init_cols').value);
+    const value3 = parseFloat(document.getElementById('init_mid_pt_re').value);
+    const value4 = parseFloat(document.getElementById('init_mid_pt_im').value);
+    const value5 = parseFloat(document.getElementById('init_pt_div').value);
+    const value6 = parseInt(document.getElementById('init_max_its').value);
+
+    // Map pixel coordinates to fractal coordinates.
     const fractalWidth = fractalImage.naturalWidth;
     const fractalHeight = fractalImage.naturalHeight;
+    console.log(`Fractal dimensions: width"${fractalWidth}, height${fractalHeight}`);
+
     const currentCentreRe = parseFloat(document.getElementById("init_mid_pt_re").value);
     const currentCentreIm = parseFloat(document.getElementById("init_mid_pt_im").value);
     const pixelDivision = parseFloat(document.getElementById("init_pt_div").value);
 
-    const newCentreRe = currentCentreRe + (clickX - fractalWidth / 2) * pixelDivision;
-    const newCentreIm = currentCentreIm - (clickY - fractalHeight / 2) * pixelDivision;
+    const new_centre_re = currentCentreRe + ((centre_col - (fractalWidth / 2))) * pixelDivision;
+    const new_centre_im = currentCentreIm + (((fractalHeight / 2) - centre_row)) * pixelDivision;
+    console.log(`New centre point: x:${new_centre_re}, y:${new_centre_im}`);
 
     // Update input fields with new centre.
-    document.getElementById("init_mid_pt_re").value = newCentreRe.toFixed(6);
-    document.getElementById("init_mid_pt_im").value = newCentreIm.toFixed(6);
+    document.getElementById("init_mid_pt_re").value = new_centre_re.toFixed(6);
+    document.getElementById("init_mid_pt_im").value = new_centre_im.toFixed(6);
 
-    // Log the selected row and column
-    console.log(`Selected point: x=${clickX}, y=${clickY}`);
+    // Log the selected (new) row and column.
+    console.log(`Selected centre point: row:${centre_row}, col:${centre_col}`);
 
     // Exit Recentre mode and (optionally) regenerate fractal.
     isRecentreMode = false;
     fractalImage.classList.remove("crosshair-cursor");
     recentreButton.textContent = "Recentre";
-    // If desired to automatically generate a new image after recentering,
-    // then uncomment the following line.
-    // If you want to leave it to the generate button then comment out.
-    //
-    // document.getElementById("generateButton").click();
+
+    // Post to back-end to recentre fractal image.
+    fetch('/recentre', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        // Pass centre point as row and column, and also as real and imaginary coordinates.
+        body: JSON.stringify({ centre_row, centre_col, new_centre_re, new_centre_im }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Recentre image endpoint reached.");
+
+        if (data.recentred === "True") {
+
+            // Filename of fractal image.
+            console.log('Fractal image: :', data.image);
+
+            // Display the generated (recentred) image.
+            const imageElement = document.getElementById("fractalImage");
+            const imageUrl = `./fractals/${data.image}`;
+            document.getElementById("fractalImage").src = imageUrl;
+            imageElement.style.display = "block";
+
+            // Time to perform fractal recentre and generation.
+            console.log('Fractal recentre and generated in: :', data.time);
+
+            // Update UI text boxes with status.
+            document.getElementById('duration-box').value = data.time;
+            document.getElementById('error-box').value = "Recentring successful.";
+        } else {
+            throw new Error(data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // Update UI text boxes with status.
+        document.getElementById('duration-box').value = data.time;
+        document.getElementById('error-box').value = error.message;
+        alert("Failed to recentre and generate fractal.");
+    })
 });
