@@ -4,6 +4,11 @@ index = 0
 color = [0, 0, 0]
 
 [[palette]]
+rel_index = 0.4
+index = 0
+color = [255, 255, 0]
+
+[[palette]]
 rel_index = 0.5
 index = 0
 color = [0, 255, 0]
@@ -14,6 +19,16 @@ index = 0
 color = [255, 0, 0]
 
 [[palette]]
+rel_index = 0.85
+index = 0
+color = [255, 153, 204]
+
+[[palette]]
+rel_index = 0.95
+index = 0
+color = [255, 255, 255]
+
+[[palette]]
 rel_index = 1.0
 index = 0
-color = [0, 0, 255]
+color = [255, 0, 255]

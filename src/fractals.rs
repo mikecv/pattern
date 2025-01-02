@@ -108,7 +108,11 @@ impl Fractal {
         self.left_lim = self.mid_pt.re - (self.cols as f64 / 2.0) * self.pt_div;
         self.top_lim = self.mid_pt.im + (self.rows as f64 / 2.0) * self.pt_div;
         self.pt_lt.re = self.left_lim;
-        self.pt_lt.im = self.top_lim;      
+        self.pt_lt.im = self.top_lim;
+
+        // Resize the escape iterations vector in case the
+        // image size has been changed by the user,
+        self.escape_its = vec![vec![0; self.cols as usize]; self.rows as usize];
     }
 
     pub fn init_col_pallete(&mut self) -> io::Result<()> {
