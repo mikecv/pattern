@@ -40,6 +40,7 @@ struct Root {
 struct PaletteEntry {
     rel_index: f32,
     index: u32,
+    comment: String,
     color: (u8, u8, u8),
 }
 
@@ -55,7 +56,7 @@ pub struct Fractal {
     pub top_lim: f64,
     pub escape_its: Vec<Vec<u32>>,
     pub pt_lt: Complex<f64>,
-    pub col_palette: Vec<(f32, u32, (u8, u8, u8))>,
+    pub col_palette: Vec<(f32, u32, String, (u8, u8, u8))>,
     pub generate_duration: Duration,
     pub recentre_duration: Duration,
     pub image_filename: String,
@@ -133,16 +134,12 @@ impl Fractal {
         // Map the palette entries into palette structure.
         self.col_palette = root.palette
             .into_iter()
-            .map(|entry| (entry.rel_index, entry.index, entry.color))
+            .map(|entry| (entry.rel_index, entry.index, entry.comment, entry.color))
             .collect();
 
         // Scale colour palette according to max iterations.
         for col_bound in 0..self.col_palette.len() {
-            let (lower_rel_index, _lower_bound, _lower_color) = self.col_palette[col_bound];
-
-            // lower_bound = (lower_rel_index * self.max_its as f32) as u32;
-            // self.col_palette[col_bound].1 = lower_bound;
-            // lower_bound = (lower_rel_index * self.max_its as f32) as u32;
+            let (lower_rel_index, _lower_bound, _lower_comment, _lower_color) = &self.col_palette[col_bound];
             self.col_palette[col_bound].1 = (lower_rel_index * self.max_its as f32) as u32;
         }
         
@@ -333,15 +330,15 @@ impl Fractal {
 
 // Function to determine the colour of the pixel.
 // Based on linear interpolation of colour palette.
-pub fn det_px_col(its: u32, col_pal: &Vec<(f32, u32, (u8, u8, u8))>) -> Rgb<u8> {
+pub fn det_px_col(its: u32, col_pal: &Vec<(f32, u32, String, (u8, u8, u8))>) -> Rgb<u8> {
 
     // Iterate through the boundaries to find where `its` fits
     // between consecutive boundaries.
     for i in 0..col_pal.len() - 1 {
-        let (_lower_rel_index, lower_bound, lower_color) = col_pal[i];
-        let (_upper_rel_index, upper_bound, upper_color) = col_pal[i + 1];
+        let (_lower_rel_index, lower_bound, _lower_comment, lower_color) = &col_pal[i];
+        let (_upper_rel_index, upper_bound, _upper_comment, upper_color) = &col_pal[i + 1];
 
-        if its > lower_bound && its <= upper_bound {
+        if its > *lower_bound && its <= *upper_bound {
             // Perform linear interpolation between the two colours.
             let t = (its - lower_bound) as f32 / (upper_bound - lower_bound) as f32;
             let r = (1.0 - t) * lower_color.0 as f32 + t * upper_color.0 as f32;
@@ -355,7 +352,7 @@ pub fn det_px_col(its: u32, col_pal: &Vec<(f32, u32, (u8, u8, u8))>) -> Rgb<u8> 
 
     // Handle the case where `its` doesn't fit into any range.
     // For simplicity, return the last colour in the palette.
-    if let Some(&(_last_rel, last_bound, last_color)) = col_pal.last() {
+    if let Some(&(_last_rel, last_bound, ref _last_comment, last_color)) = col_pal.last() {
         if its > last_bound {
             return Rgb([last_color.0, last_color.1, last_color.2]);
         }
