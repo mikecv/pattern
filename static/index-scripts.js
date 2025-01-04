@@ -134,6 +134,14 @@ fractalImage.addEventListener("click", (event) => {
     // Log the selected (new) row and column.
     console.log(`Selected centre point: row:${centre_row}, col:${centre_col}`);
 
+    // Clear the duration field.
+    const durationBox = document.getElementById("duration-box");
+    durationBox.value = "";
+
+    // Set the status field to "Pending..." while we wait for back-end to process.
+    const statusBox = document.getElementById("error-box");
+    statusBox.value = "Pending...";
+    
     // Exit Recentre mode and (optionally) regenerate fractal.
     isRecentreMode = false;
     fractalImage.classList.remove("crosshair-cursor");
