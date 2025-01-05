@@ -4,6 +4,7 @@ use log::info;
 
 use image::{Rgb, RgbImage};
 use num_complex::Complex;
+use rayon::prelude::*;
 use serde::Deserialize;
 use std::f64::consts;
 use std::fmt;
@@ -12,6 +13,7 @@ use std::fs::{self};
 use std::io::{self};
 use std::path::Path;
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 use crate::settings::Settings;
 use crate::SETTINGS;
 
@@ -152,24 +154,29 @@ impl Fractal {
 
         // Initialise timer for function.
         let generate_start = Instant::now();
-
-        // Generate fractal image.
-        // Start with the left top point.
-        let mut st_c: Complex<f64> = self.pt_lt;
-
-        // Iterate calculation over rows.
-        for row in 0..self.rows {
-            // Calculate the starting point for the row.
-            // Just need to deduct incremental distance from
-            // every row after the first (top) row.
-            if row > 0 {
-                st_c.im -= self.pt_div;
-            }
+    
+        // Wrap escape_its in an Arc<Mutex<_>> for thread-safe mutable access.
+        let escape_its = Arc::new(Mutex::new(vec![vec![0; self.cols as usize]; self.rows as usize]));
+    
+        // Use parallel iteration over rows.
+        (0..self.rows).into_par_iter().for_each(|row| {
+            let mut st_c = self.pt_lt;
+            st_c.im -= self.pt_div * row as f64;
 
             // Calculate divergence for row.
-            self.cal_row_divergence(row, st_c);
-        }
-
+            let mut row_data = vec![0; self.cols as usize];
+            self.cal_row_divergence(row as usize, st_c, &mut row_data);
+    
+            // Lock the Mutex to safely access and modify escape_its.
+            let mut escape_its_locked = escape_its.lock().unwrap();
+            escape_its_locked[row as usize] = row_data;
+        });
+    
+        // After the parallel processing, escape_its is now safely updated
+    
+        // Reassign the computed escape_its back to self
+        self.escape_its = Arc::try_unwrap(escape_its).unwrap().into_inner().unwrap();
+    
         // Render the image according to divergence calculations.
         self.render_image();
 
@@ -179,40 +186,34 @@ impl Fractal {
 
         Ok(())
     }
-
+        
     // Methed to calculate fractal divergence at a single point.
     // For points that reach the iteration count calculate
     // fractional divergence.
-    pub fn cal_row_divergence(&mut self, row: u32, st_c: Complex<f64>) {
+    pub fn cal_row_divergence(&self, _row: usize, st_c: Complex<f64>, row_data: &mut [u32]) {
+        let mut pt_row = st_c;
+    
         // Iterante over all the columns in the row.
-        // Starting point is left of the row.
-        let mut pt_row: Complex<f64> = st_c;
-
         for col in 0..self.cols {
-            // Iterate point along the row.
             if col > 0 {
                 pt_row.re += self.pt_div;
             }
 
             // Define diverges flag and set to false.
-            let mut diverges: bool = false;
+            let mut diverges = false;
 
             // Initialise divergence result to complex 0.
-            let mut px_fn: Complex<f64> = Complex::new(0.0, 0.0);
+            let mut px_fn = Complex::new(0.0, 0.0);
 
             // Initialise number of iterations.
-            let mut num_its: u32 = 1;
+            let mut num_its = 1;
 
             // Keep iterating until function diverges.
             while !diverges && (num_its < self.max_its) {
-                // Perform Mandelbrot function Fn+1 = Fn^2 + pt_row.
                 px_fn = (px_fn * px_fn) + pt_row;
-                // Check if function diverges.
-                // Will diverge if modulus equal or greater than 2.
                 if px_fn.norm() >= 2.0 {
                     diverges = true;
-                }
-                else {
+                } else {
                     num_its += 1;
                 }
             }
@@ -230,13 +231,10 @@ impl Fractal {
             if mu > self.max_its as f64 {
                 mu = self.max_its as f64;
             }
-            num_its = mu as u32;
-
-            // Save number of iterations at the point point.
-            self.escape_its[row as usize][col as usize] = num_its;
+            row_data[col as usize] = mu as u32;
         }
     }
-
+    
     // Method to recentre fractal image.
     pub fn recentre_fractal(&mut self, c_row: u32, c_col: u32) -> Result<(), FractalError> {
         info!("Recentring fractal to: (row:{:?}, col:{:?})", c_row, c_col);
