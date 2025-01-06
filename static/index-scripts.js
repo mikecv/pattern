@@ -74,7 +74,6 @@ document.getElementById('generateButton').addEventListener('click', () => {
     .catch(error => {
         console.error('Error:', error);
         // Update UI text boxes with status.
-        document.getElementById('duration-box').value = data.time;
         document.getElementById('error-box').value = error.message;
         alert("Failed to generate fractal.");
     });});
@@ -184,7 +183,6 @@ fractalImage.addEventListener("click", (event) => {
     .catch(error => {
         console.error('Error:', error);
         // Update UI text boxes with status.
-        document.getElementById('duration-box').value = data.time;
         document.getElementById('error-box').value = error.message;
         alert("Failed to recentre and generate fractal.");
     })
@@ -238,3 +236,44 @@ document.getElementById('times10Button').addEventListener('click', () => {
     // Update the pixel division.
     document.getElementById('init_pt_div').value = newZoomValue;
 });
+
+// Listener for Divergence Histogram button pressed.
+document.getElementById('histogramButton').addEventListener('click', () => {
+
+    // Clear the duration field.
+    const durationBox = document.getElementById("duration-box");
+    durationBox.value = "";
+
+    // Set the status field to "Pending..." while we wait for back-end to process.
+    const statusBox = document.getElementById("error-box");
+    statusBox.value = "Pending...";
+
+    // Post to back-end to generate fractal image.
+    fetch('/histogram', {
+        method: 'GET',
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Divergence histogram endpoint reached.");
+
+        if (data.histogram === "True") {
+
+            // Filename of histogram chart image.
+            console.log('Histogram chart image: :', data.image);
+
+            // Time to perform fractal generation.
+            console.log('Divergence histogram generated in: :', data.time);
+
+            // Update UI text boxes with status.
+            document.getElementById('duration-box').value = data.time;
+            document.getElementById('error-box').value = "Divergence histogram chart successful.";
+        } else {
+            throw new Error(data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // Update UI text boxes with status.
+        document.getElementById('error-box').value = error.message;
+        alert("Failed to generate divergence histogram.");
+    });});

@@ -142,8 +142,8 @@ async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
     // Report status and payload to front end.
     match fractal.generate_fractal() {
         Ok(_) => {
-            let test_time_ms:f64 = fractal.generate_duration.as_millis() as f64 / 1000.0 as f64;
-            let duration_str = format!("{:.3} sec", test_time_ms);
+            let gen_time_ms:f64 = fractal.generate_duration.as_millis() as f64 / 1000.0 as f64;
+            let duration_str = format!("{:.3} sec", gen_time_ms);
 
             // Ensure only the filename (not path) is sent to the frontend.
             let image_filename = std::path::Path::new(&fractal.image_filename)
@@ -166,8 +166,8 @@ async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
         Err(e) => {
             // Fractal generation failed, respond with error.
 
-            let test_time_ms:f64 = fractal.generate_duration.as_millis() as f64 / 1000.0 as f64;
-            let duration_str = format!("{:.3} sec", test_time_ms);
+            let gen_time_ms:f64 = fractal.generate_duration.as_millis() as f64 / 1000.0 as f64;
+            let duration_str = format!("{:.3} sec", gen_time_ms);
 
             let response_data = json!({
                 "generation": "False",
@@ -215,8 +215,8 @@ async fn recentre(fractal_centre: web::Json<FractalCentre>, fractal: web::Data<A
     // Report status and payload to front end.
     match fractal.recentre_fractal(centre_row, centre_col) {
         Ok(_) => {
-            let test_time_ms:f64 = fractal.generate_duration.as_millis() as f64 / 1000.0 as f64;
-            let duration_str = format!("{:.3} sec", test_time_ms);
+            let pan_time_ms:f64 = fractal.generate_duration.as_millis() as f64 / 1000.0 as f64;
+            let duration_str = format!("{:.3} sec", pan_time_ms);
 
             // Ensure only the filename (not path) is sent to the frontend.
             let image_filename = std::path::Path::new(&fractal.image_filename)
@@ -238,13 +238,66 @@ async fn recentre(fractal_centre: web::Json<FractalCentre>, fractal: web::Data<A
         Err(e) => {
             // Fractal recentre and generation failed, respond with error.
 
-            let test_time_ms:f64 = fractal.generate_duration.as_millis() as f64 / 1000.0 as f64;
-            let duration_str = format!("{:.3} sec", test_time_ms);
+            let pan_time_ms:f64 = fractal.generate_duration.as_millis() as f64 / 1000.0 as f64;
+            let duration_str = format!("{:.3} sec", pan_time_ms);
 
             let response_data = json!({
                 "recentred": "False",
                 "time": duration_str,
                 "error": e.to_string(),
+            });
+
+             // Respond with status to display on UI.
+             HttpResponse::InternalServerError().json(response_data)
+        }
+    }
+}
+
+#[get("/histogram")]
+async fn histogram(fractal: web::Data<Arc<Mutex<Fractal>>>,) -> impl Responder {
+    info!("Invoking divergence histogram endpoint.");
+
+    // Get application settings in scope.
+    // Currently not used.
+    let _settings: Settings = SETTINGS.lock().unwrap().clone();
+
+    // Get access to steg instance.
+    let mut fractal = fractal.lock().unwrap();
+
+    // Generate divergence histogram chart image.
+    // Report status and payload to front end.
+    match fractal.divergence_histogram() {
+        Ok(_) => {
+            let hist_time_ms:f64 = fractal.histogram_duration.as_millis() as f64 / 1000.0 as f64;
+            let duration_str = format!("{:.3} sec", hist_time_ms);
+
+            // Ensure only the filename (not path) is sent to the frontend.
+            let histogram_filename = std::path::Path::new(&fractal.histogram_filename)
+                .file_name()
+                .unwrap_or_default()
+                .to_string_lossy()
+                .into_owned();
+
+            let response_data = json!({
+                "histogram": "True",
+                "time": duration_str,
+                "error": "Success",
+                "image": histogram_filename,
+            });
+
+             // Respond with status to display on UI.
+             HttpResponse::Ok().json(response_data)
+        }
+        Err(e) => {
+            // Divergence histogram chart generation failed, respond with error.
+            let hist_time_ms:f64 = fractal.histogram_duration.as_millis() as f64 / 1000.0 as f64;
+            let duration_str = format!("{:.3} sec", hist_time_ms);
+
+            let response_data = json!({
+                "histogram": "False",
+                "time": duration_str,
+                "error": e.to_string(),
+                "image": "",
             });
 
              // Respond with status to display on UI.
@@ -297,6 +350,7 @@ async fn main() -> std::io::Result<()> {
             .service(intro)
             .service(generate)
             .service(recentre)
+            .service(histogram)
             .service(actix_files::Files::new("/static", "./static").show_files_listing())
             .route("/help", web::get().to(help))
             .route("/fractals/{filename}", web::get().to(serve_image))

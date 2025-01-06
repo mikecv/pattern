@@ -63,7 +63,9 @@ pub struct Fractal {
     pub generate_duration: Duration,
     pub recentre_duration: Duration,
     pub rendering_duration: Duration,
+    pub histogram_duration: Duration,
     pub image_filename: String,
+    pub histogram_filename: String,
 }
 
 // Initialise all struct variables.
@@ -90,7 +92,9 @@ impl Fractal {
             generate_duration: Duration::new(0, 0),
             recentre_duration: Duration::new(0, 0),
             rendering_duration: Duration::new(0, 0),
+            histogram_duration: Duration::new(0, 0),
             image_filename: String::from(""),
+            histogram_filename: String::from(""),
         }
     }
 
@@ -352,6 +356,20 @@ impl Fractal {
         self.image_filename = wrt_path_string.clone();
         info!("Saving fractal image to: {:?}", wrt_path_string);
     }
+
+    // Method to generate a divergence histogram chart image.
+    pub fn divergence_histogram(&mut self) -> Result<(), FractalError> {
+        info!("Generating fractal divergence histogram.");
+
+        // Initialise timer for function.
+        let histogram_start = Instant::now();
+    
+        // Report ok status and timing.
+        self.histogram_duration = histogram_start.elapsed();
+        info!("Time to generate divergence histogram: {:?}", self.histogram_duration);
+
+        Ok(())
+    }  
 }
 
 // Function to determine the colour of the pixel.
