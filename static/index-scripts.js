@@ -134,6 +134,14 @@ fractalImage.addEventListener("click", (event) => {
     // Log the selected (new) row and column.
     console.log(`Selected centre point: row:${centre_row}, col:${centre_col}`);
 
+    // Clear the duration field.
+    const durationBox = document.getElementById("duration-box");
+    durationBox.value = "";
+
+    // Set the status field to "Pending..." while we wait for back-end to process.
+    const statusBox = document.getElementById("error-box");
+    statusBox.value = "Pending...";
+    
     // Exit Recentre mode and (optionally) regenerate fractal.
     isRecentreMode = false;
     fractalImage.classList.remove("crosshair-cursor");
@@ -180,4 +188,53 @@ fractalImage.addEventListener("click", (event) => {
         document.getElementById('error-box').value = error.message;
         alert("Failed to recentre and generate fractal.");
     })
+});
+
+const times2Button = document.getElementById("times2Button");
+const times3Button = document.getElementById("times3Button");
+const times5Button = document.getElementById("times5Button");
+const times10Button = document.getElementById("times10Button");
+
+// Listener for fractal zoom x 2 button pressed.
+document.getElementById('times2Button').addEventListener('click', () => {
+
+    // Get current value of pixel division and divide by factor.
+    // Dividing pixel division will give corresponding zoom be that factor.
+    const value5 = parseFloat(document.getElementById('init_pt_div').value);
+    const newZoomValue = value5 / 2.0;
+    // Update the pixel division.
+    document.getElementById('init_pt_div').value = newZoomValue;
+});
+
+// Listener for fractal zoom x 3 button pressed.
+document.getElementById('times3Button').addEventListener('click', () => {
+
+    // Get current value of pixel division and divide by factor.
+    // Dividing pixel division will give corresponding zoom be that factor.
+    const value5 = parseFloat(document.getElementById('init_pt_div').value);
+    const newZoomValue = value5 / 3.0;
+    // Update the pixel division.
+    document.getElementById('init_pt_div').value = newZoomValue;
+});
+
+// Listener for fractal zoom x 5 button pressed.
+document.getElementById('times5Button').addEventListener('click', () => {
+
+    // Get current value of pixel division and divide by factor.
+    // Dividing pixel division will give corresponding zoom be that factor.
+    const value5 = parseFloat(document.getElementById('init_pt_div').value);
+    const newZoomValue = value5 / 5.0;
+    // Update the pixel division.
+    document.getElementById('init_pt_div').value = newZoomValue;
+});
+
+// Listener for fractal zoom x 10 button pressed.
+document.getElementById('times10Button').addEventListener('click', () => {
+
+    // Get current value of pixel division and divide by factor.
+    // Dividing pixel division will give corresponding zoom be that factor.
+    const value5 = parseFloat(document.getElementById('init_pt_div').value);
+    const newZoomValue = value5 / 10.0;
+    // Update the pixel division.
+    document.getElementById('init_pt_div').value = newZoomValue;
 });

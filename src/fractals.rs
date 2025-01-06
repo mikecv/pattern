@@ -1,9 +1,11 @@
 // Fractals data structure and methods.
 
 use log::info;
+use log::debug;
 
 use image::{Rgb, RgbImage};
 use num_complex::Complex;
+use rayon::prelude::*;
 use serde::Deserialize;
 use std::f64::consts;
 use std::fmt;
@@ -12,6 +14,7 @@ use std::fs::{self};
 use std::io::{self};
 use std::path::Path;
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 use crate::settings::Settings;
 use crate::SETTINGS;
 
@@ -40,6 +43,7 @@ struct Root {
 struct PaletteEntry {
     rel_index: f32,
     index: u32,
+    comment: String,
     color: (u8, u8, u8),
 }
 
@@ -55,9 +59,10 @@ pub struct Fractal {
     pub top_lim: f64,
     pub escape_its: Vec<Vec<u32>>,
     pub pt_lt: Complex<f64>,
-    pub col_palette: Vec<(f32, u32, (u8, u8, u8))>,
+    pub col_palette: Vec<(f32, u32, String, (u8, u8, u8))>,
     pub generate_duration: Duration,
     pub recentre_duration: Duration,
+    pub rendering_duration: Duration,
     pub image_filename: String,
 }
 
@@ -84,6 +89,7 @@ impl Fractal {
             col_palette: Vec::new(),
             generate_duration: Duration::new(0, 0),
             recentre_duration: Duration::new(0, 0),
+            rendering_duration: Duration::new(0, 0),
             image_filename: String::from(""),
         }
     }
@@ -133,16 +139,12 @@ impl Fractal {
         // Map the palette entries into palette structure.
         self.col_palette = root.palette
             .into_iter()
-            .map(|entry| (entry.rel_index, entry.index, entry.color))
+            .map(|entry| (entry.rel_index, entry.index, entry.comment, entry.color))
             .collect();
 
         // Scale colour palette according to max iterations.
         for col_bound in 0..self.col_palette.len() {
-            let (lower_rel_index, _lower_bound, _lower_color) = self.col_palette[col_bound];
-
-            // lower_bound = (lower_rel_index * self.max_its as f32) as u32;
-            // self.col_palette[col_bound].1 = lower_bound;
-            // lower_bound = (lower_rel_index * self.max_its as f32) as u32;
+            let (lower_rel_index, _lower_bound, _lower_comment, _lower_color) = &self.col_palette[col_bound];
             self.col_palette[col_bound].1 = (lower_rel_index * self.max_its as f32) as u32;
         }
         
@@ -155,67 +157,75 @@ impl Fractal {
 
         // Initialise timer for function.
         let generate_start = Instant::now();
-
-        // Generate fractal image.
-        // Start with the left top point.
-        let mut st_c: Complex<f64> = self.pt_lt;
-
-        // Iterate calculation over rows.
-        for row in 0..self.rows {
-            // Calculate the starting point for the row.
-            // Just need to deduct incremental distance from
-            // every row after the first (top) row.
-            if row > 0 {
-                st_c.im -= self.pt_div;
-            }
+    
+        // Wrap escape_its in an Arc<Mutex<_>> for thread-safe mutable access.
+        let escape_its = Arc::new(Mutex::new(vec![vec![0; self.cols as usize]; self.rows as usize]));
+    
+        // Use parallel iteration over rows.
+        (0..self.rows).into_par_iter().for_each(|row| {
+            let mut st_c = self.pt_lt;
+            st_c.im -= self.pt_div * row as f64;
 
             // Calculate divergence for row.
-            self.cal_row_divergence(row, st_c);
-        }
+            let mut row_data = vec![0; self.cols as usize];
+            self.cal_row_divergence(row as usize, st_c, &mut row_data);
+    
+            // Lock the Mutex to safely access and modify escape_its.
+            let mut escape_its_locked = escape_its.lock().unwrap();
+            escape_its_locked[row as usize] = row_data;
+        });
+    
+        // After the parallel processing, escape_its can now be safely updated.   
+        // Reassign the computed escape_its back to self.
+        self.escape_its = Arc::try_unwrap(escape_its).unwrap().into_inner().unwrap();
 
+        self.generate_duration = generate_start.elapsed();
+        info!("Time to perform fractal divergence: {:?}", self.generate_duration);
+
+        // Initialise timer for function.
+        let rendering_start = Instant::now();  
+    
         // Render the image according to divergence calculations.
         self.render_image();
 
         // Report ok status and timing.
-        self.generate_duration = generate_start.elapsed();
-        info!("Time to generate fractal: {:?}", self.generate_duration);
+        self.rendering_duration = rendering_start.elapsed();
+        info!("Time to perform fractal rendering: {:?}", self.rendering_duration);
 
         Ok(())
     }
-
+        
     // Methed to calculate fractal divergence at a single point.
     // For points that reach the iteration count calculate
     // fractional divergence.
-    pub fn cal_row_divergence(&mut self, row: u32, st_c: Complex<f64>) {
-        // Iterante over all the columns in the row.
-        // Starting point is left of the row.
-        let mut pt_row: Complex<f64> = st_c;
+    pub fn cal_row_divergence(&self, row: usize, st_c: Complex<f64>, row_data: &mut [u32]) {
+        // Start divergence calculation timer for row.
+        let start_time = Instant::now();
 
+        // Point (col) in row for calculation.
+        let mut pt_row = st_c;
+    
+        // Iterante over all the columns in the row.
         for col in 0..self.cols {
-            // Iterate point along the row.
             if col > 0 {
                 pt_row.re += self.pt_div;
             }
 
             // Define diverges flag and set to false.
-            let mut diverges: bool = false;
+            let mut diverges = false;
 
             // Initialise divergence result to complex 0.
-            let mut px_fn: Complex<f64> = Complex::new(0.0, 0.0);
+            let mut px_fn = Complex::new(0.0, 0.0);
 
             // Initialise number of iterations.
-            let mut num_its: u32 = 1;
+            let mut num_its = 1;
 
             // Keep iterating until function diverges.
             while !diverges && (num_its < self.max_its) {
-                // Perform Mandelbrot function Fn+1 = Fn^2 + pt_row.
                 px_fn = (px_fn * px_fn) + pt_row;
-                // Check if function diverges.
-                // Will diverge if modulus equal or greater than 2.
                 if px_fn.norm() >= 2.0 {
                     diverges = true;
-                }
-                else {
+                } else {
                     num_its += 1;
                 }
             }
@@ -229,17 +239,19 @@ impl Fractal {
             };
             let mut mu = num_its as f64 + 1.0 - mu_log;
 
-            // Limit fractional divergence to maximum iterations
+            // Limit fractional divergence to maximum iterations'
             if mu > self.max_its as f64 {
                 mu = self.max_its as f64;
             }
-            num_its = mu as u32;
-
-            // Save number of iterations at the point point.
-            self.escape_its[row as usize][col as usize] = num_its;
+            row_data[col as usize] = mu as u32;
         }
-    }
 
+        // Diagnostic time to do divergence processing on a particulat row.
+        // This is only for checking on parallel processing.
+        let duration = start_time.elapsed();
+        debug!("Processed row {} in {:?}", row, duration);
+    }
+    
     // Method to recentre fractal image.
     pub fn recentre_fractal(&mut self, c_row: u32, c_col: u32) -> Result<(), FractalError> {
         info!("Recentring fractal to: (row:{:?}, col:{:?})", c_row, c_col);
@@ -277,33 +289,44 @@ impl Fractal {
         // as we are not interested in the original path.
         let raw_filename = &self.settings.fractal_filename;
 
-        // Get file path for the file to be written.
-        // All files will be written to a specific folder.
-        let mut wrt_path = PathBuf::new();       
-        wrt_path.push(&self.settings.fractal_folder);
-        wrt_path.push(raw_filename);
-        let mut wrt_path_string = wrt_path.to_string_lossy().into_owned();
+        // Get the folder where files should be written.
+        let wrt_path = PathBuf::from(&self.settings.fractal_folder);
 
-        // Check if we are going to overwrite an existing file.
-        // If so we will add a suffix to the end of the file name
-        // to make it unique.
+        // Ensure the folder exists (optional, if folder creation is necessary).
+        std::fs::create_dir_all(&wrt_path).expect("Failed to create fractal folder");
+
+        // Extract base name and extension.
+        // Includes the dot (e.g., ".png").
+        let extension = match raw_filename.rfind('.') {
+            Some(idx) => &raw_filename[idx..],
+            None => "",
+        };
+        // Excludes the dot.
+        let base_filename = match raw_filename.rfind('.') {
+            Some(idx) => &raw_filename[..idx],
+            None => raw_filename,
+        };
+
+        // Start with suffix 1 for filename `fractal-001`.
         let mut suffix = 1;
-        let original_filename = wrt_path_string.clone();
-        while Path::new(&wrt_path_string).exists() {
-            // Construct next suffix.
-            let extension = match original_filename.rfind('.') {
-                Some(idx) => &original_filename[idx..],
-                None => "",
-            };
-            // Construct base file path.
-            let base_filename = if let Some(idx) = original_filename.rfind('.') {
-                &original_filename[..idx]
-            } else {
-                &original_filename
-            };
-            // Construct complete file name.
-            wrt_path_string = format!("{}-{:03}{}", base_filename, suffix, extension);
-            // Increment suffix if this file name exists.
+        let mut wrt_path_string;
+
+        // Loop until we find a unique filename.
+        loop {
+            // Format the filename with the current suffix.
+            let filename = format!("{}-{:03}{}", base_filename, suffix, extension);
+
+            // Set the filename while keeping the directory path intact.
+            let mut full_path = wrt_path.clone();
+            full_path.push(filename);
+            wrt_path_string = full_path.to_string_lossy().into_owned();
+
+            // Break if the file does not exist.
+            if !Path::new(&wrt_path_string).exists() {
+                break;
+            }
+
+            // Increment suffix to try the next filename.
             suffix += 1;
         }
 
@@ -333,15 +356,15 @@ impl Fractal {
 
 // Function to determine the colour of the pixel.
 // Based on linear interpolation of colour palette.
-pub fn det_px_col(its: u32, col_pal: &Vec<(f32, u32, (u8, u8, u8))>) -> Rgb<u8> {
+pub fn det_px_col(its: u32, col_pal: &Vec<(f32, u32, String, (u8, u8, u8))>) -> Rgb<u8> {
 
     // Iterate through the boundaries to find where `its` fits
     // between consecutive boundaries.
     for i in 0..col_pal.len() - 1 {
-        let (_lower_rel_index, lower_bound, lower_color) = col_pal[i];
-        let (_upper_rel_index, upper_bound, upper_color) = col_pal[i + 1];
+        let (_lower_rel_index, lower_bound, _lower_comment, lower_color) = &col_pal[i];
+        let (_upper_rel_index, upper_bound, _upper_comment, upper_color) = &col_pal[i + 1];
 
-        if its > lower_bound && its <= upper_bound {
+        if its > *lower_bound && its <= *upper_bound {
             // Perform linear interpolation between the two colours.
             let t = (its - lower_bound) as f32 / (upper_bound - lower_bound) as f32;
             let r = (1.0 - t) * lower_color.0 as f32 + t * upper_color.0 as f32;
@@ -355,7 +378,7 @@ pub fn det_px_col(its: u32, col_pal: &Vec<(f32, u32, (u8, u8, u8))>) -> Rgb<u8> 
 
     // Handle the case where `its` doesn't fit into any range.
     // For simplicity, return the last colour in the palette.
-    if let Some(&(_last_rel, last_bound, last_color)) = col_pal.last() {
+    if let Some(&(_last_rel, last_bound, ref _last_comment, last_color)) = col_pal.last() {
         if its > last_bound {
             return Rgb([last_color.0, last_color.1, last_color.2]);
         }

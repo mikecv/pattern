@@ -285,6 +285,9 @@ async fn main() -> std::io::Result<()> {
     // Call init method to initialise struct.
     let fractal = Arc::new(Mutex::new(Fractal::init()));
 
+    // Check number of threads available for fractal computations.
+    info!("Number of threads currently available for fractal processing: {}", rayon::current_num_threads());
+
     // Create and start web service.
     HttpServer::new(move || {
         App::new()

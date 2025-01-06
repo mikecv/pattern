@@ -10,7 +10,7 @@
 </head>
 <body>
     <h1>Fractals</h1>
-    <p style="text-align:left;">(Help fcan be found <a href="/help" target="_blank">here)</a>.</p>
+    <p style="text-align:left;">(Help can be found <a href="/help" target="_blank">here)</a>.</p>
 
     <div class="container">
         <!-- Main Generation Container -->
@@ -35,7 +35,7 @@
                 </div>
                 <div class="parameter-field">
                     <label for="init_pt_div">Pixel Division:</label><br>
-                    <input type="number" step="0.000001" id="init_pt_div" name="init_pt_div">
+                    <input type="number" step="any" id="init_pt_div" name="init_pt_div">
                 </div>
                 <div class="parameter-field">
                     <label for="init_max_its">Maximum Iterations:</label><br>
@@ -43,7 +43,11 @@
                 </div>
                 <!-- User action buttons section. -->
                 <button id="generateButton">Generate</button>
-                <button id="recentreButton">Recentre</button>
+                <button id="recentreButton">Recentre</button><br>
+                <button id="times2Button">x2</button>
+                <button id="times3Button">x3</button>
+                <button id="times5Button">x5</button>
+                <button id="times10Button">x10</button>
                 <!-- Message fields on front end. -->
                 <div id="status-container" style="margin-top: 20px;">
                     <div class="status-field">

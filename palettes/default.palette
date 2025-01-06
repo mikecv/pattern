@@ -1,34 +1,59 @@
 [[palette]]
 rel_index = 0.0
 index = 0
-color = [0, 0, 0]
+comment = "light pink"
+color = [253, 237, 236]
+
+[[palette]]
+rel_index = 0.3
+index = 0
+comment = "pink"
+color = [241, 148, 138]
 
 [[palette]]
 rel_index = 0.4
 index = 0
-color = [255, 255, 0]
+comment = "purple"
+color = [118, 68, 138]
 
 [[palette]]
-rel_index = 0.5
+rel_index = 0.6
 index = 0
-color = [0, 255, 0]
+comment = "light blue"
+color = [174, 214, 241]
 
 [[palette]]
 rel_index = 0.7
 index = 0
-color = [255, 0, 0]
+comment = "teal"
+color = [23, 165, 137]
+
+[[palette]]
+rel_index = 0.8
+index = 0
+comment = "light green"
+color = [169, 223, 191]
 
 [[palette]]
 rel_index = 0.85
 index = 0
-color = [255, 153, 204]
+comment = "orange"
+color = [241, 196, 15]
+
+[[palette]]
+rel_index = 0.9
+index = 0
+comment = "rose"
+color = [240, 178, 122]
 
 [[palette]]
 rel_index = 0.95
 index = 0
-color = [255, 255, 255]
+comment = "grey blue"
+color = [191, 201, 202]
 
 [[palette]]
 rel_index = 1.0
 index = 0
-color = [255, 0, 255]
+comment = "dark navy"
+color = [40, 55, 71]
