@@ -1,6 +1,7 @@
 // Fractals data structure and methods.
 
 use log::info;
+use log::debug;
 
 use image::{Rgb, RgbImage};
 use num_complex::Complex;
@@ -61,6 +62,7 @@ pub struct Fractal {
     pub col_palette: Vec<(f32, u32, String, (u8, u8, u8))>,
     pub generate_duration: Duration,
     pub recentre_duration: Duration,
+    pub rendering_duration: Duration,
     pub image_filename: String,
 }
 
@@ -87,6 +89,7 @@ impl Fractal {
             col_palette: Vec::new(),
             generate_duration: Duration::new(0, 0),
             recentre_duration: Duration::new(0, 0),
+            rendering_duration: Duration::new(0, 0),
             image_filename: String::from(""),
         }
     }
@@ -172,17 +175,22 @@ impl Fractal {
             escape_its_locked[row as usize] = row_data;
         });
     
-        // After the parallel processing, escape_its is now safely updated
-    
-        // Reassign the computed escape_its back to self
+        // After the parallel processing, escape_its can now be safely updated.   
+        // Reassign the computed escape_its back to self.
         self.escape_its = Arc::try_unwrap(escape_its).unwrap().into_inner().unwrap();
+
+        self.generate_duration = generate_start.elapsed();
+        info!("Time to perform fractal divergence: {:?}", self.generate_duration);
+
+        // Initialise timer for function.
+        let rendering_start = Instant::now();  
     
         // Render the image according to divergence calculations.
         self.render_image();
 
         // Report ok status and timing.
-        self.generate_duration = generate_start.elapsed();
-        info!("Time to generate fractal: {:?}", self.generate_duration);
+        self.rendering_duration = rendering_start.elapsed();
+        info!("Time to perform fractal rendering: {:?}", self.rendering_duration);
 
         Ok(())
     }
@@ -190,7 +198,11 @@ impl Fractal {
     // Methed to calculate fractal divergence at a single point.
     // For points that reach the iteration count calculate
     // fractional divergence.
-    pub fn cal_row_divergence(&self, _row: usize, st_c: Complex<f64>, row_data: &mut [u32]) {
+    pub fn cal_row_divergence(&self, row: usize, st_c: Complex<f64>, row_data: &mut [u32]) {
+        // Start divergence calculation timer for row.
+        let start_time = Instant::now();
+
+        // Point (col) in row for calculation.
         let mut pt_row = st_c;
     
         // Iterante over all the columns in the row.
@@ -227,12 +239,17 @@ impl Fractal {
             };
             let mut mu = num_its as f64 + 1.0 - mu_log;
 
-            // Limit fractional divergence to maximum iterations
+            // Limit fractional divergence to maximum iterations'
             if mu > self.max_its as f64 {
                 mu = self.max_its as f64;
             }
             row_data[col as usize] = mu as u32;
         }
+
+        // Diagnostic time to do divergence processing on a particulat row.
+        // This is only for checking on parallel processing.
+        let duration = start_time.elapsed();
+        debug!("Processed row {} in {:?}", row, duration);
     }
     
     // Method to recentre fractal image.
@@ -272,33 +289,44 @@ impl Fractal {
         // as we are not interested in the original path.
         let raw_filename = &self.settings.fractal_filename;
 
-        // Get file path for the file to be written.
-        // All files will be written to a specific folder.
-        let mut wrt_path = PathBuf::new();       
-        wrt_path.push(&self.settings.fractal_folder);
-        wrt_path.push(raw_filename);
-        let mut wrt_path_string = wrt_path.to_string_lossy().into_owned();
+        // Get the folder where files should be written.
+        let wrt_path = PathBuf::from(&self.settings.fractal_folder);
 
-        // Check if we are going to overwrite an existing file.
-        // If so we will add a suffix to the end of the file name
-        // to make it unique.
+        // Ensure the folder exists (optional, if folder creation is necessary).
+        std::fs::create_dir_all(&wrt_path).expect("Failed to create fractal folder");
+
+        // Extract base name and extension.
+        // Includes the dot (e.g., ".png").
+        let extension = match raw_filename.rfind('.') {
+            Some(idx) => &raw_filename[idx..],
+            None => "",
+        };
+        // Excludes the dot.
+        let base_filename = match raw_filename.rfind('.') {
+            Some(idx) => &raw_filename[..idx],
+            None => raw_filename,
+        };
+
+        // Start with suffix 1 for filename `fractal-001`.
         let mut suffix = 1;
-        let original_filename = wrt_path_string.clone();
-        while Path::new(&wrt_path_string).exists() {
-            // Construct next suffix.
-            let extension = match original_filename.rfind('.') {
-                Some(idx) => &original_filename[idx..],
-                None => "",
-            };
-            // Construct base file path.
-            let base_filename = if let Some(idx) = original_filename.rfind('.') {
-                &original_filename[..idx]
-            } else {
-                &original_filename
-            };
-            // Construct complete file name.
-            wrt_path_string = format!("{}-{:03}{}", base_filename, suffix, extension);
-            // Increment suffix if this file name exists.
+        let mut wrt_path_string;
+
+        // Loop until we find a unique filename.
+        loop {
+            // Format the filename with the current suffix.
+            let filename = format!("{}-{:03}{}", base_filename, suffix, extension);
+
+            // Set the filename while keeping the directory path intact.
+            let mut full_path = wrt_path.clone();
+            full_path.push(filename);
+            wrt_path_string = full_path.to_string_lossy().into_owned();
+
+            // Break if the file does not exist.
+            if !Path::new(&wrt_path_string).exists() {
+                break;
+            }
+
+            // Increment suffix to try the next filename.
             suffix += 1;
         }
 
