@@ -258,13 +258,8 @@ document.getElementById('histogramButton').addEventListener('click', () => {
 
         // Parse payload string to json format,
         const jsonPayload = JSON.parse(data.chart);
-        console.log('Chart data: ', jsonPayload);
 
         if (data.histogram === "True") {
-
-            // Check the individual bins and counts json objects.
-            console.log('Payload bins:', jsonPayload.bins);
-            console.log('Payload counts:', jsonPayload.counts);
 
             // Use local storage to hold payload.
             localStorage.setItem('histogramData', JSON.stringify({

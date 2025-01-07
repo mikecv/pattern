@@ -368,8 +368,8 @@ impl Fractal {
         // Example histogram data.
         // Replace with divergence data.
         self.histogram_data_json = json!({
-            "bins": [0, 1, 2, 3, 4],
-            "counts": [10, 20, 30, 25, 15]
+            "bins": [0, 1, 2, 3, 4, 5, 6],
+            "counts": [10, 20, 30, 25, 15, 17, 2]
         }).to_string();
 
         // Report ok status and timing.

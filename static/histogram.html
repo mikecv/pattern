@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/index-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
     <title>Divergence Histogram</title>
 </head>
 <body>
-    <canvas id="histogramCanvas" width="400" height="400"></canvas>
+    <!-- <canvas id="histogramCanvas" width="800" height="400"></canvas> -->
+    <canvas id="histogramCanvas"></canvas>
 
     <!-- Load the local Chart.js script -->
     <script src="/static/js/chart.umd.js"></script>
@@ -17,21 +19,28 @@
             console.error("Chart.js not loaded correctly.");
         }
 
-        // Use the Chart.js library to render the histogram
+        // Get bins and count values from payload.
+        const histogramData = JSON.parse(localStorage.getItem('histogramData'));
+        const bins = histogramData.bins;
+        const counts = histogramData.counts;
+
+        // Use the Chart.js library to render the histogram.
         const ctx = document.getElementById('histogramCanvas').getContext('2d');
         const histogramChart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: [0, 1, 2, 3, 4],
+                labels: bins,
                 datasets: [{
                     label: 'Counts',
-                    data: [10, 20, 30, 25, 15],
+                    data: counts,
                     backgroundColor: 'rgba(0, 123, 255, 0.5)',
                     borderColor: 'rgba(0, 123, 255, 1)',
                     borderWidth: 1
                 }]
             },
             options: {
+                responsive: true,
+                maintainAspectRatio: true,
                 scales: {
                     y: {
                         beginAtZero: true
