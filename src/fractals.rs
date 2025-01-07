@@ -7,6 +7,7 @@ use image::{Rgb, RgbImage};
 use num_complex::Complex;
 use rayon::prelude::*;
 use serde::Deserialize;
+use serde_json::json;
 use std::f64::consts;
 use std::fmt;
 use std::time::{Instant, Duration};
@@ -65,7 +66,7 @@ pub struct Fractal {
     pub rendering_duration: Duration,
     pub histogram_duration: Duration,
     pub image_filename: String,
-    pub histogram_filename: String,
+    pub histogram_data_json: String,
 }
 
 // Initialise all struct variables.
@@ -94,7 +95,7 @@ impl Fractal {
             rendering_duration: Duration::new(0, 0),
             histogram_duration: Duration::new(0, 0),
             image_filename: String::from(""),
-            histogram_filename: String::from(""),
+            histogram_data_json: String::from(""),
         }
     }
 
@@ -363,7 +364,14 @@ impl Fractal {
 
         // Initialise timer for function.
         let histogram_start = Instant::now();
-    
+
+        // Example histogram data.
+        // Replace with divergence data.
+        self.histogram_data_json = json!({
+            "bins": [0, 1, 2, 3, 4],
+            "counts": [10, 20, 30, 25, 15]
+        }).to_string();
+
         // Report ok status and timing.
         self.histogram_duration = histogram_start.elapsed();
         info!("Time to generate divergence histogram: {:?}", self.histogram_duration);

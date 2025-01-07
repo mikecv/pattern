@@ -264,32 +264,25 @@ async fn histogram(fractal: web::Data<Arc<Mutex<Fractal>>>,) -> impl Responder {
     // Get access to steg instance.
     let mut fractal = fractal.lock().unwrap();
 
-    // Generate divergence histogram chart image.
+    // Generate divergence histogram chart json data.
     // Report status and payload to front end.
     match fractal.divergence_histogram() {
         Ok(_) => {
             let hist_time_ms:f64 = fractal.histogram_duration.as_millis() as f64 / 1000.0 as f64;
             let duration_str = format!("{:.3} sec", hist_time_ms);
 
-            // Ensure only the filename (not path) is sent to the frontend.
-            let histogram_filename = std::path::Path::new(&fractal.histogram_filename)
-                .file_name()
-                .unwrap_or_default()
-                .to_string_lossy()
-                .into_owned();
-
             let response_data = json!({
                 "histogram": "True",
                 "time": duration_str,
                 "error": "Success",
-                "image": histogram_filename,
+                "chart": fractal.histogram_data_json,
             });
 
              // Respond with status to display on UI.
              HttpResponse::Ok().json(response_data)
         }
         Err(e) => {
-            // Divergence histogram chart generation failed, respond with error.
+            // Divergence histogram chart data generation failed, respond with error.
             let hist_time_ms:f64 = fractal.histogram_duration.as_millis() as f64 / 1000.0 as f64;
             let duration_str = format!("{:.3} sec", hist_time_ms);
 
@@ -297,7 +290,7 @@ async fn histogram(fractal: web::Data<Arc<Mutex<Fractal>>>,) -> impl Responder {
                 "histogram": "False",
                 "time": duration_str,
                 "error": e.to_string(),
-                "image": "",
+                "chart": "",
             });
 
              // Respond with status to display on UI.

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Divergence Histogram</title>
+</head>
+<body>
+    <canvas id="histogramCanvas" width="400" height="400"></canvas>
+
+    <!-- Load the local Chart.js script -->
+    <script src="/static/js/chart.umd.js"></script>
+
+    <script>
+        // Check if Chart is defined
+        if (typeof Chart === 'undefined') {
+            console.error("Chart.js not loaded correctly.");
+        }
+
+        // Use the Chart.js library to render the histogram
+        const ctx = document.getElementById('histogramCanvas').getContext('2d');
+        const histogramChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [0, 1, 2, 3, 4],
+                datasets: [{
+                    label: 'Counts',
+                    data: [10, 20, 30, 25, 15],
+                    backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                    borderColor: 'rgba(0, 123, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -248,32 +248,32 @@ document.getElementById('histogramButton').addEventListener('click', () => {
     const statusBox = document.getElementById("error-box");
     statusBox.value = "Pending...";
 
-    // Post to back-end to generate fractal image.
+    // Post to back-end to generate fractal divergence histogram data.
     fetch('/histogram', {
         method: 'GET',
     })
     .then(response => response.json())
     .then(data => {
-        console.log("Divergence histogram endpoint reached.");
+        console.log("Divergence histogram chart endpoint reached.");
+
+        // Parse payload string to json format,
+        const jsonPayload = JSON.parse(data.chart);
+        console.log('Chart data: ', jsonPayload);
 
         if (data.histogram === "True") {
 
-            // Filename of histogram chart image.
-            console.log('Histogram chart image: :', data.image);
+            // Check the individual bins and counts json objects.
+            console.log('Payload bins:', jsonPayload.bins);
+            console.log('Payload counts:', jsonPayload.counts);
 
-            // Time to perform fractal generation.
-            console.log('Divergence histogram generated in: :', data.time);
-
-            // Update UI text boxes with status.
-            document.getElementById('duration-box').value = data.time;
-            document.getElementById('error-box').value = "Divergence histogram chart successful.";
+            // Use local storage to hold payload.
+            localStorage.setItem('histogramData', JSON.stringify({
+                bins: jsonPayload.bins,
+                counts: jsonPayload.counts
+            }));
+            window.open('/static/histogram.html', '_blank');
         } else {
             throw new Error(data.error);
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        // Update UI text boxes with status.
-        document.getElementById('error-box').value = error.message;
-        alert("Failed to generate divergence histogram.");
-    });});
+    });
+});
