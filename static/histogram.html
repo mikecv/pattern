@@ -31,34 +31,74 @@
                 labels: bins,
                 datasets: [{
                     type: 'bar',
-                    label: 'Counts',
+                    label: 'Divergence Counts',
                     data: counts,
                     backgroundColor: 'rgba(0, 123, 255, 0.5)',
                     borderColor: 'rgba(0, 123, 255, 1)',
                     borderWidth: 1,
-                }, {
-                    type: 'line',
-                    label: 'Counts',
-                    data: counts,
-                    backgroundColor: 'rgba(255, 123, 0, 0.5)',
-                    borderColor: 'rgba(255, 123, 0, 1)',
-                    borderWidth: 2,
-                    pointRadius: 5,
-                    pointHoverRadius: 10,
                 }],
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: true,
                 scales: {
-                    y: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
                         beginAtZero: true,
+                        ticks: {
+                            font: {
+                                size: 14,
+                                family: 'Arial',
+                                weight: 'bold',
+                            },
+                            color: '#555',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Escape Iterations',
+                            font: {
+                                size: 18,
+                                family: 'Arial',
+                                weight: 'bold',
+                            },
+                            color: '#333',
+                        },
+                    },
+                    y: {
+                        type: 'logarithmic',
+                        position: 'left',
+                        beginAtZero: false,
+                        ticks: {
+                            font: {
+                                size: 14,
+                                family: 'Arial',
+                                weight: 'bold',
+                            },
+                            color: '#555',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Counts',
+                            font: {
+                                size: 18,
+                                family: 'Arial',
+                                weight: 'bold',
+                            },
+                            color: '#333',
+                        },
                     },
                 },
                 plugins: {
                     title: {
                         display: true,
                         text: 'Divergence Histogram',
+                        font: {
+                            size: 24,
+                            family: 'Arial',
+                            weight: 'bold',
+                        },
+                        color: '#333',
                     },
                 },
             },
