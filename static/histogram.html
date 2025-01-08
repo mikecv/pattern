@@ -27,26 +27,41 @@
         // Use the Chart.js library to render the histogram.
         const ctx = document.getElementById('histogramCanvas').getContext('2d');
         const histogramChart = new Chart(ctx, {
-            type: 'bar',
             data: {
                 labels: bins,
                 datasets: [{
+                    type: 'bar',
                     label: 'Counts',
                     data: counts,
                     backgroundColor: 'rgba(0, 123, 255, 0.5)',
                     borderColor: 'rgba(0, 123, 255, 1)',
-                    borderWidth: 1
-                }]
+                    borderWidth: 1,
+                }, {
+                    type: 'line',
+                    label: 'Counts',
+                    data: counts,
+                    backgroundColor: 'rgba(255, 123, 0, 0.5)',
+                    borderColor: 'rgba(255, 123, 0, 1)',
+                    borderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 10,
+                }],
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: true,
                 scales: {
                     y: {
-                        beginAtZero: true
-                    }
-                }
-            }
+                        beginAtZero: true,
+                    },
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Divergence Histogram',
+                    },
+                },
+            },
         });
     </script>
 </body>
