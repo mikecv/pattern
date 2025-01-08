@@ -365,11 +365,58 @@ impl Fractal {
         // Initialise timer for function.
         let histogram_start = Instant::now();
 
-        // Example histogram data.
-        // Replace with divergence data.
+        // Initialise plot vector.
+        let mut data = Vec::new();
+
+        // Iterate through possible iteration counts, i.e. 1 to maximum iterations.
+        // Then find number of occurances of its in the fractal image pixel divergence count,
+        // which is also going to be from 1 to maximum iterations.
+        // So the plot x axis is 1 to max_its, and y axis will be 1 to (rows x columns) worst case.
+        // Keep track of maximum interations count (max_count).
+        // And the largest iteration encountered (end_its).
+        // This is used to limit the axis lengths.
+        let mut max_count: u32 = 0;
+        let mut _end_its: u32 = 1;
+
+        // Iterate through all possible iteration counts.
+        for its in 0..self.max_its {
+                let mut its_cnt: u32 = 0;
+
+            // Iterate through all pixels and check for matched iteration count.
+            for y in 0..self.cols {
+                for x in 0..self.rows {
+                    // Check if the iterations count matches divergence count for this pixel.
+                    if self.escape_its[x as usize][y as usize] == its {
+                        its_cnt += 1;
+                        // Check if new maximum.
+                        if its_cnt > max_count {
+                            max_count = its_cnt;
+                        }
+                    }
+                }
+            }
+
+            // Check if any divergence at this count.
+            // If so, it's the largest count so far.
+            if its_cnt > 0 {
+                _end_its = its;
+            }
+
+            // Push the iteration and count to the data array.
+            data.push((its, its_cnt));
+        }
+
+        // Assemble histogram data from the 'data' vector in the format
+        // of bins and counts as follows:
+        //
+        // self.histogram_data_json = json!({
+        //     "bins": [0, 1, 2, 3, 4, 5, 6],
+        //     "counts": [10, 20, 30, 25, 15, 17, 2]
+        // }).to_string();
+
         self.histogram_data_json = json!({
-            "bins": [0, 1, 2, 3, 4, 5, 6],
-            "counts": [10, 20, 30, 25, 15, 17, 2]
+            "bins": data.iter().map(|&(its, _)| its).collect::<Vec<u32>>(),
+            "counts": data.iter().map(|&(_, count)| count).collect::<Vec<u32>>()
         }).to_string();
 
         // Report ok status and timing.
