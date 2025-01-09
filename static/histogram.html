@@ -30,12 +30,14 @@
             data: {
                 labels: bins,
                 datasets: [{
-                    type: 'bar',
+                    type: 'line',
                     label: 'Divergence Counts',
                     data: counts,
-                    backgroundColor: 'rgba(0, 123, 255, 0.5)',
-                    borderColor: 'rgba(0, 123, 255, 1)',
+                    backgroundColor: 'rgba(255, 153, 0, 0.5)',
+                    borderColor: 'rgba(255, 153, 0, 1)',
                     borderWidth: 1,
+                    pointRadius: 1,
+                    pointHoverRadius: 3,
                 }],
             },
             options: {
@@ -65,10 +67,33 @@
                             color: '#333',
                         },
                     },
+                    x2: {
+                        type: 'linear',
+                        position: 'bottom',
+                        beginAtZero: true,
+                        ticks: {
+                            font: {
+                                size: 14,
+                                family: 'Arial',
+                                weight: 'bold',
+                            },
+                            color: '#555',
+                        },
+                        title: {
+                            display: true,
+                            text: '(Normalised)',
+                            font: {
+                                size: 18,
+                                family: 'Arial',
+                                weight: 'bold',
+                            },
+                            color: '#333',
+                        },
+                    },
                     y: {
                         type: 'logarithmic',
                         position: 'left',
-                        beginAtZero: false,
+                        beginAtZero: true,
                         ticks: {
                             font: {
                                 size: 14,
