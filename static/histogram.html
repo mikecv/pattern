@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/static/index-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <title>Divergence Histogram</title>
+</head>
+<body>
+    <!-- <canvas id="histogramCanvas" width="800" height="400"></canvas> -->
+    <canvas id="histogramCanvas"></canvas>
+
+    <!-- Load the local Chart.js script -->
+    <script src="/static/js/chart.umd.js"></script>
+
+    <script>
+        // Check if Chart is defined
+        if (typeof Chart === 'undefined') {
+            console.error("Chart.js not loaded correctly.");
+        }
+
+        // Get bins and count values from payload.
+        const histogramData = JSON.parse(localStorage.getItem('histogramData'));
+        const bins = histogramData.bins;
+        const counts = histogramData.counts;
+
+        // Use the Chart.js library to render the histogram.
+        const ctx = document.getElementById('histogramCanvas').getContext('2d');
+        const histogramChart = new Chart(ctx, {
+            data: {
+                labels: bins,
+                datasets: [{
+                    type: 'line',
+                    label: 'Divergence Counts',
+                    data: counts,
+                    backgroundColor: 'rgba(255, 153, 0, 0.5)',
+                    borderColor: 'rgba(255, 153, 0, 1)',
+                    borderWidth: 1,
+                    pointRadius: 1,
+                    pointHoverRadius: 3,
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        beginAtZero: true,
+                        ticks: {
+                            font: {
+                                size: 14,
+                                family: 'Arial',
+                                weight: 'bold',
+                            },
+                            color: '#555',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Escape Iterations',
+                            font: {
+                                size: 18,
+                                family: 'Arial',
+                                weight: 'bold',
+                            },
+                            color: '#333',
+                        },
+                    },
+                    x2: {
+                        type: 'linear',
+                        position: 'bottom',
+                        beginAtZero: true,
+                        scale: {
+                            range: [0.0, 2.0],
+                        },
+                        ticks: {
+                            font: {
+                                size: 14,
+                                family: 'Arial',
+                                weight: 'bold',
+                            },
+                            color: '#555',
+                        },
+                        title: {
+                            display: true,
+                            text: '(Normalised)',
+                            font: {
+                                size: 18,
+                                family: 'Arial',
+                                weight: 'bold',
+                            },
+                            color: '#333',
+                        },
+                    },
+                    y: {
+                        type: 'logarithmic',
+                        position: 'left',
+                        beginAtZero: true,
+                        ticks: {
+                            font: {
+                                size: 14,
+                                family: 'Arial',
+                                weight: 'bold',
+                            },
+                            color: '#555',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Counts (log)',
+                            font: {
+                                size: 18,
+                                family: 'Arial',
+                                weight: 'bold',
+                            },
+                            color: '#333',
+                        },
+                    },
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Divergence Histogram',
+                        font: {
+                            size: 24,
+                            family: 'Arial',
+                            weight: 'bold',
+                        },
+                        color: '#333',
+                    },
+                },
+            },
+        });
+    </script>
+</body>
+</html>

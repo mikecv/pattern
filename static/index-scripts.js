@@ -74,7 +74,6 @@ document.getElementById('generateButton').addEventListener('click', () => {
     .catch(error => {
         console.error('Error:', error);
         // Update UI text boxes with status.
-        document.getElementById('duration-box').value = data.time;
         document.getElementById('error-box').value = error.message;
         alert("Failed to generate fractal.");
     });});
@@ -184,7 +183,6 @@ fractalImage.addEventListener("click", (event) => {
     .catch(error => {
         console.error('Error:', error);
         // Update UI text boxes with status.
-        document.getElementById('duration-box').value = data.time;
         document.getElementById('error-box').value = error.message;
         alert("Failed to recentre and generate fractal.");
     })
@@ -237,4 +235,40 @@ document.getElementById('times10Button').addEventListener('click', () => {
     const newZoomValue = value5 / 10.0;
     // Update the pixel division.
     document.getElementById('init_pt_div').value = newZoomValue;
+});
+
+// Listener for Divergence Histogram button pressed.
+document.getElementById('histogramButton').addEventListener('click', () => {
+
+    // Clear the duration field.
+    const durationBox = document.getElementById("duration-box");
+    durationBox.value = "";
+
+    // Set the status field to "Pending..." while we wait for back-end to process.
+    const statusBox = document.getElementById("error-box");
+    statusBox.value = "Pending...";
+
+    // Post to back-end to generate fractal divergence histogram data.
+    fetch('/histogram', {
+        method: 'GET',
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Divergence histogram chart endpoint reached.");
+
+        // Parse payload string to json format,
+        const jsonPayload = JSON.parse(data.chart);
+
+        if (data.histogram === "True") {
+
+            // Use local storage to hold payload.
+            localStorage.setItem('histogramData', JSON.stringify({
+                bins: jsonPayload.bins,
+                counts: jsonPayload.counts
+            }));
+            window.open('/static/histogram.html', '_blank');
+        } else {
+            throw new Error(data.error);
+        }
+    });
 });

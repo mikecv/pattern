@@ -7,6 +7,7 @@ use image::{Rgb, RgbImage};
 use num_complex::Complex;
 use rayon::prelude::*;
 use serde::Deserialize;
+use serde_json::json;
 use std::f64::consts;
 use std::fmt;
 use std::time::{Instant, Duration};
@@ -63,7 +64,9 @@ pub struct Fractal {
     pub generate_duration: Duration,
     pub recentre_duration: Duration,
     pub rendering_duration: Duration,
+    pub histogram_duration: Duration,
     pub image_filename: String,
+    pub histogram_data_json: String,
 }
 
 // Initialise all struct variables.
@@ -90,7 +93,9 @@ impl Fractal {
             generate_duration: Duration::new(0, 0),
             recentre_duration: Duration::new(0, 0),
             rendering_duration: Duration::new(0, 0),
+            histogram_duration: Duration::new(0, 0),
             image_filename: String::from(""),
+            histogram_data_json: String::from(""),
         }
     }
 
@@ -352,6 +357,74 @@ impl Fractal {
         self.image_filename = wrt_path_string.clone();
         info!("Saving fractal image to: {:?}", wrt_path_string);
     }
+
+    // Method to generate a divergence histogram chart image.
+    pub fn divergence_histogram(&mut self) -> Result<(), FractalError> {
+        info!("Generating fractal divergence histogram.");
+
+        // Initialise timer for function.
+        let histogram_start = Instant::now();
+
+        // Initialise plot vector.
+        let mut data = Vec::new();
+
+        // Iterate through possible iteration counts, i.e. 1 to maximum iterations.
+        // Then find number of occurances of its in the fractal image pixel divergence count,
+        // which is also going to be from 1 to maximum iterations.
+        // So the plot x axis is 1 to max_its, and y axis will be 1 to (rows x columns) worst case.
+        // Keep track of maximum interations count (max_count).
+        // And the largest iteration encountered (end_its).
+        // This is used to limit the axis lengths.
+        let mut max_count: u32 = 0;
+        let mut _end_its: u32 = 1;
+
+        // Iterate through all possible iteration counts.
+        for its in 0..self.max_its {
+                let mut its_cnt: u32 = 0;
+
+            // Iterate through all pixels and check for matched iteration count.
+            for y in 0..self.cols {
+                for x in 0..self.rows {
+                    // Check if the iterations count matches divergence count for this pixel.
+                    if self.escape_its[x as usize][y as usize] == its {
+                        its_cnt += 1;
+                        // Check if new maximum.
+                        if its_cnt > max_count {
+                            max_count = its_cnt;
+                        }
+                    }
+                }
+            }
+
+            // Check if any divergence at this count.
+            // If so, it's the largest count so far.
+            if its_cnt > 0 {
+                _end_its = its;
+            }
+
+            // Push the iteration and count to the data array.
+            data.push((its, its_cnt));
+        }
+
+        // Assemble histogram data from the 'data' vector in the format
+        // of bins and counts as follows:
+        //
+        // self.histogram_data_json = json!({
+        //     "bins": [0, 1, 2, 3, 4, 5, 6],
+        //     "counts": [10, 20, 30, 25, 15, 17, 2]
+        // }).to_string();
+
+        self.histogram_data_json = json!({
+            "bins": data.iter().map(|&(its, _)| its).collect::<Vec<u32>>(),
+            "counts": data.iter().map(|&(_, count)| count).collect::<Vec<u32>>()
+        }).to_string();
+
+        // Report ok status and timing.
+        self.histogram_duration = histogram_start.elapsed();
+        info!("Time to generate divergence histogram: {:?}", self.histogram_duration);
+
+        Ok(())
+    }  
 }
 
 // Function to determine the colour of the pixel.
