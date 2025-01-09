@@ -11,7 +11,7 @@ def_palette:        "default.palette"
 # Initial Mandlebrot plot.
 init_rows:          800
 init_cols:          800
-init_mid_pt_re:     -1.0
+init_mid_pt_re:     -0.75
 init_mid_pt_im:     0.0
-init_pt_div:        0.0075
-init_max_its:       200
+init_pt_div:        0.00375
+init_max_its:       100
