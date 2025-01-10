@@ -4,6 +4,7 @@
 const defaults = window.defaults;
 
 window.onload = () => {
+    // Initialise parameter values.
     document.getElementById('init_rows').value = defaults.value1 !== undefined ? defaults.value1 : '';
     document.getElementById('init_cols').value = defaults.value2 !== undefined ? defaults.value2 : '';
     document.getElementById('init_mid_pt_re').value = defaults.value3 !== undefined ? defaults.value3 : '';
@@ -11,6 +12,19 @@ window.onload = () => {
     document.getElementById('init_pt_div').value = defaults.value5 !== undefined ? defaults.value5 : '';
     document.getElementById('init_max_its').value = defaults.value6 !== undefined ? defaults.value6 : '';
 };
+
+// Get referemces to buttons (as needed).
+const recentreButton = document.getElementById("recentreButton");
+const histogramButton = document.getElementById("histogramButton");
+
+// Intially disable the re-centre and histogram buttons.
+window.addEventListener("load", () => {
+    recentreButton.disabled = true;
+    histogramButton.disabled = true;
+});
+
+// Get reference to fractal image (as needed).
+const fractalImage = document.getElementById("fractalImage");
 
 // Listener for fractal generate button pressed.
 document.getElementById('generateButton').addEventListener('click', () => {
@@ -20,7 +34,6 @@ document.getElementById('generateButton').addEventListener('click', () => {
     const value4 = parseFloat(document.getElementById('init_mid_pt_im').value);
     const value5 = parseFloat(document.getElementById('init_pt_div').value);
     const value6 = parseInt(document.getElementById('init_max_its').value);
-
 
     // Clear the duration field.
     const durationBox = document.getElementById("duration-box");
@@ -67,6 +80,11 @@ document.getElementById('generateButton').addEventListener('click', () => {
             // Update UI text boxes with status.
             document.getElementById('duration-box').value = data.time;
             document.getElementById('error-box').value = "Fractal generation successful.";
+
+            // Enable the re-centre and histogram buttons.
+            recentreButton.disabled = false;
+            histogramButton.disabled = false;
+
         } else {
             throw new Error(data.error);
         }
@@ -77,9 +95,6 @@ document.getElementById('generateButton').addEventListener('click', () => {
         document.getElementById('error-box').value = error.message;
         alert("Failed to generate fractal.");
     });});
-
-const recentreButton = document.getElementById("recentreButton");
-const fractalImage = document.getElementById("fractalImage");
 
 let isRecentreMode = false;
 
