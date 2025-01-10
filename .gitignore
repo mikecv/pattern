@@ -18,4 +18,5 @@ Cargo.lock
 *.code-workspace
 /logs/*
 /fractals/*
+/palettes/default.palette
 notes.txt

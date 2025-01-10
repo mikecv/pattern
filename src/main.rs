@@ -4,12 +4,15 @@ use log::info;
 use log4rs;
 use actix_files as fsx;
 use actix_files::NamedFile;
+use actix_multipart::Multipart;
 use actix_web::{get, post, web, App, HttpRequest, HttpServer, HttpResponse, Responder};
+use futures_util::stream::StreamExt;
 use lazy_static::lazy_static;
 use num_complex::Complex;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::fs;
+use std::io::Write;
 use std::sync::{Arc, Mutex};
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
@@ -299,6 +302,67 @@ async fn histogram(fractal: web::Data<Arc<Mutex<Fractal>>>,) -> impl Responder {
     }
 }
 
+#[post("/palette")]
+async fn palette(mut payload: Multipart, fractal: web::Data<Arc<Mutex<Fractal>>>,) -> impl Responder {
+    info!("Invoking active colour palette endpoint.");
+
+    // Get application settings in scope.
+    let settings: Settings = SETTINGS.lock().unwrap().clone();
+
+    // Get access to steg instance.
+    let mut fractal = fractal.lock().unwrap();
+
+    // Ensure that the directory exists.
+    // The colour palette folder is stored in settings.
+    fs::create_dir_all(&settings.palette_folder).unwrap_or_default();
+
+    let mut active_palette_file = None;
+
+    while let Some(field) = payload.next().await {
+        if let Ok(mut field) = field {
+            if let Some(content_disposition) = field.content_disposition().cloned() {
+                if let Some(filename) = content_disposition.get_filename() {
+                    let filepath = format!("{}/{}", &settings.palette_folder, filename);
+            
+                    // Save the palette file, overwrite if necessary.
+                    let mut f = match fs::File::create(filepath.clone()) {
+                        Ok(file) => file,
+                        Err(e) => return HttpResponse::InternalServerError().body(e.to_string()),
+                    };
+            
+                    while let Some(chunk) = field.next().await {
+                        match chunk {
+                            Ok(data) => {
+                                if f.write_all(&data).is_err() {
+                                    return HttpResponse::InternalServerError().body("File write error");
+                                }
+                            }
+                            Err(e) => return HttpResponse::InternalServerError().body(e.to_string()),
+                        }
+                    }
+            
+                    active_palette_file = Some(filename.to_string());
+                }
+            }
+        }
+    }
+  
+    if let Some(palette_file) = active_palette_file {
+        // Update the fractal instance with the new active palette file.
+        fractal.active_palette_file = palette_file.clone();
+
+        // Construct payload for UI.
+        let response_data = json!({
+            "palette": "True",
+            "palette_file": palette_file,
+        });
+
+        HttpResponse::Ok().json(response_data)
+    } else {
+        HttpResponse::BadRequest().body("No palette file provided")
+    }
+}
+
 async fn help(settings: web::Data<Settings>) -> impl Responder {
     // Help endpoint function.
     // Read the help file.
@@ -344,6 +408,7 @@ async fn main() -> std::io::Result<()> {
             .service(generate)
             .service(recentre)
             .service(histogram)
+            .service(palette)
             .service(actix_files::Files::new("/static", "./static").show_files_listing())
             .route("/help", web::get().to(help))
             .route("/fractals/{filename}", web::get().to(serve_image))

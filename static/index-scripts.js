@@ -287,3 +287,36 @@ document.getElementById('histogramButton').addEventListener('click', () => {
         }
     });
 });
+
+// Listener for select active colour palette button pressed.
+document.getElementById('paletteButton').addEventListener('click', () => {
+    const fileInput = document.getElementById('paletteFileInput');
+    fileInput.click();
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length > 0) {
+            const selectedFile = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('palette_file', selectedFile);
+
+            // Post to back-end to upload the palette file
+            fetch('/palette', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.palette === "True") {
+                    document.getElementById('palette-box').value = data.palette_file;
+                } else {
+                    throw new Error(data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('error-box').value = error.message;
+                alert("Failed to upload and set active colour palette.");
+            });
+        }
+    }, { once: true });
+});
