@@ -61,6 +61,7 @@ pub struct Fractal {
     pub escape_its: Vec<Vec<u32>>,
     pub pt_lt: Complex<f64>,
     pub col_palette: Vec<(f32, u32, String, (u8, u8, u8))>,
+    pub active_palette_file: String,
     pub generate_duration: Duration,
     pub recentre_duration: Duration,
     pub rendering_duration: Duration,
@@ -90,6 +91,7 @@ impl Fractal {
             escape_its: Vec::new(),
             pt_lt: Complex::new(0.0, 0.0),
             col_palette: Vec::new(),
+            active_palette_file: "./palettes/default.palette".to_string(),
             generate_duration: Duration::new(0, 0),
             recentre_duration: Duration::new(0, 0),
             rendering_duration: Duration::new(0, 0),
@@ -127,15 +129,17 @@ impl Fractal {
     }
 
     pub fn init_col_pallete(&mut self) -> io::Result<()> {
-        info!("Importing default colour palette.");
+        info!("Importing active colour palette.");
 
-        // Create path to default palette file.
-        let mut col_path = PathBuf::new();       
-        col_path.push(&self.settings.palette_folder);
-        col_path.push(&self.settings.def_palette);
-        let col_path_string = col_path.to_string_lossy().into_owned();
+        // // Create path to default palette file.
+        // let mut col_path = PathBuf::new();       
+        // col_path.push(&self.settings.palette_folder);
+        // col_path.push(&self.settings.def_palette);
+ 
+        let col_path_string = &self.active_palette_file;
+        info!("Active colour palette: {:?}", &col_path_string);
 
-        // Read default palette from toml file.
+        // Read active palette from toml file.
         let toml_str = fs::read_to_string(&col_path_string)?;
 
         // Deserialize into the Root struct
