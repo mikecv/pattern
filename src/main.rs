@@ -13,6 +13,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::fs;
 use std::io::Write;
+use std::path::Path;
 use std::sync::{Arc, Mutex};
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
@@ -81,6 +82,7 @@ struct FractalParams {
     value4: Option<f64>,
     value5: Option<f64>,
     value6: Option<u32>,
+    value7: Option<String>,
 }
 
 // Define structure for fractal recentre payload.
@@ -133,6 +135,16 @@ async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
     // Parameter 6.
     params.value6 = Some(params.value6.unwrap_or(settings.init_max_its));
     fractal.max_its = params.value6.unwrap();
+
+    // Pass the currently active colour palette file (only the filename is required).
+    // Only need this to initially the active palette file.
+    params.value7 = Some(params.value7.unwrap_or_else(|| {
+        Path::new(&fractal.active_palette_file)
+            .file_name()
+            .and_then(|os_str| os_str.to_str())
+            .unwrap_or("")
+            .to_string()
+    }));
 
     // Initialise fractal limits.
     // Require the fractal parameters to be initialised beforehand.

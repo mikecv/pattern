@@ -77,6 +77,10 @@ document.getElementById('generateButton').addEventListener('click', () => {
             // Time to perform fractal generation.
             console.log('Fractal generated in: :', data.time);
 
+            // Update the current active colour palette.
+            // Only really needed before first fractal generation.
+            document.getElementById('palette-box').value = data.params.value7;
+
             // Update UI text boxes with status.
             document.getElementById('duration-box').value = data.time;
             document.getElementById('error-box').value = "Fractal generation successful.";
