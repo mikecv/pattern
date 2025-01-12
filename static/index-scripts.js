@@ -85,9 +85,10 @@ document.getElementById('generateButton').addEventListener('click', () => {
             document.getElementById('duration-box').value = data.time;
             document.getElementById('error-box').value = "Fractal generation successful.";
 
-            // Enable the re-centre and histogram buttons.
+            // Assert the re-centre, re-render, and histogram buttons as inactive.
             recentreButton.disabled = false;
             histogramButton.disabled = false;
+            renderButton.disabled = false;
 
         } else {
             throw new Error(data.error);
@@ -324,3 +325,58 @@ document.getElementById('paletteButton').addEventListener('click', () => {
         }
     }, { once: true });
 });
+
+// Listener for fractal re-render button pressed.
+document.getElementById('renderButton').addEventListener('click', () => {
+
+    // Clear the duration field.
+    const durationBox = document.getElementById("duration-box");
+    durationBox.value = "";
+
+    // Set the status field to "Pending..." while we wait for back-end to process.
+    const statusBox = document.getElementById("error-box");
+    statusBox.value = "Pending...";
+
+    // Post to back-end to re-render the fractal image.
+    fetch('/render', {
+        method: 'POST',
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Re-render image endpoint reached.");
+        // Update the fractal parameters to reflect the parameters
+        // in the backend and not what may or may not have changed in the UI.
+        document.getElementById('init_rows').value = data.params.rows;
+        document.getElementById('init_cols').value = data.params.cols;
+        document.getElementById('init_mid_pt_re').value = data.params.centre_re;
+        document.getElementById('init_mid_pt_im').value = data.params.centre_im;
+        document.getElementById('init_pt_div').value = data.params.pt_div;
+        document.getElementById('init_max_its').value = data.params.max_its;
+
+        if (data.rendered === "True") {
+
+            // Filename of fractal image.
+            console.log('Fractal image: :', data.image);
+
+            // Display the generated image.
+            const imageElement = document.getElementById("fractalImage");
+            const imageUrl = `./fractals/${data.image}`;
+            document.getElementById("fractalImage").src = imageUrl;
+            imageElement.style.display = "block";
+
+            // Time to perform fractal re-render.
+            console.log('Fractal re-rendered in: :', data.time);
+
+            // Update UI text boxes with status.
+            document.getElementById('duration-box').value = data.time;
+            document.getElementById('error-box').value = "Fractal re-rendering successful.";
+        } else {
+            throw new Error(data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // Update UI text boxes with status.
+        document.getElementById('error-box').value = error.message;
+        alert("Failed to re-render fractal.");
+});});

@@ -94,6 +94,17 @@ struct FractalCentre {
     new_centre_im: f64,
 }
 
+// Define structure for fractal render payload.
+#[derive(Deserialize, Serialize, Debug, Clone)]
+struct FractalParamsClear {
+    rows: u32,
+    cols: u32,
+    centre_re: f64,
+    centre_im: f64,
+    pt_div: f64,
+    max_its: u32,
+}
+
 #[post("/generate")]
 async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<Arc<Mutex<Fractal>>>,) -> impl Responder {
     info!("Invoking fractal generation endpoint.");
@@ -375,6 +386,62 @@ async fn palette(mut payload: Multipart, fractal: web::Data<Arc<Mutex<Fractal>>>
     }
 }
 
+#[post("/render")]
+async fn render(fractal: web::Data<Arc<Mutex<Fractal>>>,) -> impl Responder {
+    info!("Invoking fractal re-render endpoint.");
+
+    // Get application settings in scope.
+    // Currently not used.
+    let _settings: Settings = SETTINGS.lock().unwrap().clone();
+
+    // Get access to steg instance.
+    let mut fractal = fractal.lock().unwrap();
+
+    // Initialise params struct for current values in backend.
+    // Any changes at UI not committed will be lost.
+    let mut params = FractalParamsClear {
+        rows: 0,
+        cols: 0,
+        centre_re: 0.0,
+        centre_im: 0.0,
+        pt_div: 0.0,
+        max_its: 0,
+    };
+
+    // Assert parameters to current backend values.
+    params.rows = fractal.rows;
+    params.cols = fractal.cols;
+    params.centre_re = fractal.mid_pt.re;
+    params.centre_im = fractal.mid_pt.im;
+    params.pt_div = fractal.pt_div;
+    params.max_its = fractal.max_its;
+
+    // Re-render the fractal image.
+    fractal.render_image();
+
+    // Report status and payload to front end.
+    let render_time_ms:f64 = fractal.rendering_duration.as_millis() as f64 / 1000.0 as f64;
+    let duration_str = format!("{:.3} sec", render_time_ms);
+
+    // Ensure only the filename (not path) is sent to the frontend.
+    let image_filename = std::path::Path::new(&fractal.image_filename)
+        .file_name()
+        .unwrap_or_default()
+        .to_string_lossy()
+        .into_owned();
+
+    let response_data = json!({
+        "rendered": "True",
+        "time": duration_str,
+        "error": "Success",
+        "params": params,
+        "image": image_filename,
+    });
+
+    // Respond with status to display on UI.
+    HttpResponse::Ok().json(response_data)
+}
+
 async fn help(settings: web::Data<Settings>) -> impl Responder {
     // Help endpoint function.
     // Read the help file.
@@ -421,6 +488,7 @@ async fn main() -> std::io::Result<()> {
             .service(recentre)
             .service(histogram)
             .service(palette)
+            .service(render)
             .service(actix_files::Files::new("/static", "./static").show_files_listing())
             .route("/help", web::get().to(help))
             .route("/fractals/{filename}", web::get().to(serve_image))
