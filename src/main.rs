@@ -2,6 +2,7 @@
 
 use log::info;
 use log4rs;
+
 use actix_files as fsx;
 use actix_files::NamedFile;
 use actix_multipart::Multipart;
@@ -45,9 +46,10 @@ async fn serve_image(_req: HttpRequest, path: web::Path<String>) -> actix_web::R
     Ok(NamedFile::open(file_path)?)
 }
 
+// Application start (index) endpoint.
 #[get("/")]
 async fn intro() -> impl Responder {
-    info!("Invoking UI intro endpoint.");
+    info!("Invoking UI application start endpoint.");
 
     // Get application settings in scope.
     let settings: Settings = SETTINGS.lock().unwrap().clone();
@@ -105,6 +107,7 @@ struct FractalParamsClear {
     max_its: u32,
 }
 
+// Generate fractal image endpoint.
 #[post("/generate")]
 async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<Arc<Mutex<Fractal>>>,) -> impl Responder {
     info!("Invoking fractal generation endpoint.");
@@ -115,10 +118,10 @@ async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
     // Get access to steg instance.
     let mut fractal = fractal.lock().unwrap();
 
-    // Initialise fractal.
+    // Initialise fractal image.
     fractal.init_fractal_image();
 
-    // Access parameters.
+    // Access parameters, note that these may have been edited in the UI.
     // Check if any parameters are set to none type,
     // if so, set to default setting.
     let mut params = fractal_params.into_inner();
@@ -131,13 +134,12 @@ async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
     params.value2 = Some(params.value2.unwrap_or(settings.init_cols));
     fractal.cols = params.value2.unwrap();
 
-    // Parameter 3 & 4
+    // Parameter 3 & 4.
     params.value3 = Some(params.value3.unwrap_or(settings.init_mid_pt_re));
     let mid_pt_re = params.value3.unwrap();
     params.value4 = Some(params.value4.unwrap_or(settings.init_mid_pt_im));
     let mid_pt_im = params.value4.unwrap(); 
     fractal.mid_pt = Complex::new(mid_pt_re, mid_pt_im);
-    info!("Original centre x:{:?} y:{:?}", mid_pt_re, mid_pt_im);
 
     // Parameter 5.
     params.value5 = Some(params.value5.unwrap_or(settings.init_pt_div));
@@ -148,7 +150,7 @@ async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
     fractal.max_its = params.value6.unwrap();
 
     // Pass the currently active colour palette file (only the filename is required).
-    // Only need this to initially the active palette file.
+    // Only need this initially for the active palette file.
     params.value7 = Some(params.value7.unwrap_or_else(|| {
         Path::new(&fractal.active_palette_file)
             .file_name()
@@ -161,11 +163,11 @@ async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
     // Require the fractal parameters to be initialised beforehand.
     fractal.init_fractal_limits();
 
-    // Initialise colour palette as it may have changed.
+    // Initialise the colour palette as it may have changed.
     let _ = fractal.init_col_pallete();
 
-    // Generate the fractal.
-    // Report status and payload to front end.
+    // Generate the fractal image.
+    // Report status and payload to the front end.
     match fractal.generate_fractal() {
         Ok(_) => {
             let gen_time_ms:f64 = fractal.generate_duration.as_millis() as f64 / 1000.0 as f64;
@@ -191,7 +193,6 @@ async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
         }
         Err(e) => {
             // Fractal generation failed, respond with error.
-
             let gen_time_ms:f64 = fractal.generate_duration.as_millis() as f64 / 1000.0 as f64;
             let duration_str = format!("{:.3} sec", gen_time_ms);
 
@@ -208,6 +209,9 @@ async fn generate(fractal_params: web::Json<FractalParams>, fractal: web::Data<A
     }
 }
 
+// This moves the centre of the fractal and then generates the new fractal image.
+// This could involve (but doesn't) copying parts of the already rendered
+// fractal instead of performing divergence calculations on the whole image.
 #[post("/recentre")]
 async fn recentre(fractal_centre: web::Json<FractalCentre>, fractal: web::Data<Arc<Mutex<Fractal>>>,) -> impl Responder {
     info!("Invoking fractal recentre endpoint.");
@@ -219,13 +223,12 @@ async fn recentre(fractal_centre: web::Json<FractalCentre>, fractal: web::Data<A
     // Get access to steg instance.
     let mut fractal = fractal.lock().unwrap();
 
-    // Access fractal new centrepoint.
+    // Access fractal new centre point.
     // New centre point row/col is just used to potentially speeding up
     // the generation by only generating new pixels (not moved ones).
     let centre_point = fractal_centre.into_inner();
     let centre_row = centre_point.centre_row;
     let centre_col = centre_point.centre_col;
-    info!("Recentring to col:{:?} row:{:?}", centre_col, centre_row);
 
     // Also set new real/imaginary coordinates of centre point for
     // generating new panned fractal image.
@@ -263,7 +266,6 @@ async fn recentre(fractal_centre: web::Json<FractalCentre>, fractal: web::Data<A
         }
         Err(e) => {
             // Fractal recentre and generation failed, respond with error.
-
             let pan_time_ms:f64 = fractal.generate_duration.as_millis() as f64 / 1000.0 as f64;
             let duration_str = format!("{:.3} sec", pan_time_ms);
 
@@ -279,6 +281,10 @@ async fn recentre(fractal_centre: web::Json<FractalCentre>, fractal: web::Data<A
     }
 }
 
+// Generate a histogram curve plot of iteration divergence count versus
+// iteration count.
+// This can be useful to determine the colour boundaries of colour
+// render palettes.
 #[get("/histogram")]
 async fn histogram(fractal: web::Data<Arc<Mutex<Fractal>>>,) -> impl Responder {
     info!("Invoking divergence histogram endpoint.");
@@ -325,6 +331,8 @@ async fn histogram(fractal: web::Data<Arc<Mutex<Fractal>>>,) -> impl Responder {
     }
 }
 
+// Load a colour palette file and make it currently active.
+// By default colour palette files are stored in a standard folder.
 #[post("/palette")]
 async fn palette(mut payload: Multipart, fractal: web::Data<Arc<Mutex<Fractal>>>,) -> impl Responder {
     info!("Invoking active colour palette endpoint.");
@@ -347,7 +355,7 @@ async fn palette(mut payload: Multipart, fractal: web::Data<Arc<Mutex<Fractal>>>
                 if let Some(filename) = content_disposition.get_filename() {
                     let filepath = format!("{}/{}", &settings.palette_folder, filename);
             
-                    // Save the palette file, overwrite if necessary.
+                    // Save the palette file, overwrite it if necessary.
                     let mut f = match fs::File::create(filepath.clone()) {
                         Ok(file) => file,
                         Err(e) => return HttpResponse::InternalServerError().body(e.to_string()),
@@ -386,6 +394,12 @@ async fn palette(mut payload: Multipart, fractal: web::Data<Arc<Mutex<Fractal>>>
     }
 }
 
+// Performs rendering of the current fractal image according to the
+// current active colour palette.
+// Note that the UI render button triggering this endpoint is disabled
+// until the fractal image has first been generated.
+// Note also that the initial fractal image is rendered using
+// the default colour palette.
 #[post("/render")]
 async fn render(fractal: web::Data<Arc<Mutex<Fractal>>>,) -> impl Responder {
     info!("Invoking fractal re-render endpoint.");
@@ -398,7 +412,8 @@ async fn render(fractal: web::Data<Arc<Mutex<Fractal>>>,) -> impl Responder {
     let mut fractal = fractal.lock().unwrap();
 
     // Initialise params struct for current values in backend.
-    // Any changes at UI not committed will be lost.
+    // Any changes at UI not committed will be lost, where committed
+    // implies parameters used for the currently generated fractal.
     let mut params = FractalParamsClear {
         rows: 0,
         cols: 0,
@@ -442,6 +457,7 @@ async fn render(fractal: web::Data<Arc<Mutex<Fractal>>>,) -> impl Responder {
     HttpResponse::Ok().json(response_data)
 }
 
+// User help endpoint.
 async fn help(settings: web::Data<Settings>) -> impl Responder {
     // Help endpoint function.
     // Read the help file.
@@ -455,6 +471,8 @@ async fn help(settings: web::Data<Settings>) -> impl Responder {
     HttpResponse::Ok().content_type("text/html").body(help_content)
 }
 
+// Application main.
+// Sets up application folders and creates the fractal instance.
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     // Create folders if they don't already exist.

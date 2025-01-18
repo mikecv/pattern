@@ -18,6 +18,8 @@
       <div id="mySidebar" class="sidebar">
          <a href="javascript:void(0)" class="closebtn" onclick="hide()">×</a>
          <a href="#Introduction">Introduction</a>
+         <a href="#Layout">Screen Layout</a>
+         <a href="#Parameters"> - Fractal Parameters</a>
          <a href="#About">About</a>
       </div>
       <div id="content" style="padding-left: 50px;">
@@ -27,9 +29,39 @@
 
          <a id="Introduction"></a>
          <h2>Introduction</h2>
-         <p>This application is for exploring the world of fractals,
-            in particular, the Mandlebrot set.
+         <p>An application for exploring the world of fractals,
+            in particular, the Mandlebrot set.</p>
 
+         <a id="Layout"></a>
+         <h2>Screen Layout</h2>
+         <p>The User interface is a web page consisting of a number of parts,
+            namely:
+            <ul>
+               <li>Fractal parameters</li>
+               <li>Image controls</li>
+               <li>Application status</li>
+               <li>Fractal image</li>
+             </ul> 
+            These are described in more detail below.</p>
+
+         <a id="Parameters"></a>
+         <h3>Fractal parameters</h3>
+         <p>Fractal parameters relate to nature of the fractal image, and
+            how the fractal image is generated, as described and illustrated below.
+            <ul>
+               <li>The <i>Rows</i> and <i>Cols</i> parameters control the size of the fractal image.</li>
+               <li>The <i>Centre</i> coordinates define the centrepoint of the fractal image,
+               which in the case of the Mandlebrot Set is the real and imaginary components
+               of the centrepoint.</li>
+               <li>The <i>Pixel division</i> represents the resolution of the fractal image.
+               That is, the real and imaginary components of a pixel's size.</li>
+               <li>The <i>Maximum iterations</i> is the escape point where divergence of the
+               fractal calculations is guaranteed.</li>
+             </ul></p>
+
+            <p class="images">
+         <img src="/static/help-pics/parameters.png" alt="Fractal parameters."></p>
+ 
          <a id="About"></a>
          <h2>About</h2>
          <p style="text-align:center; font-weight: bold;">Fractals</p>
