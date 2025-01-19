@@ -20,6 +20,7 @@
          <a href="#Introduction">Introduction</a>
          <a href="#Layout">Screen Layout</a>
          <a href="#Parameters"> - Fractal Parameters</a>
+         <a href="#Controls"> - Fractal Controls</a>
          <a href="#About">About</a>
       </div>
       <div id="content" style="padding-left: 50px;">
@@ -49,19 +50,38 @@
          <p>Fractal parameters relate to nature of the fractal image, and
             how the fractal image is generated, as described and illustrated below.
             <ul>
-               <li>The <i>Rows</i> and <i>Cols</i> parameters control the size of the fractal image.</li>
-               <li>The <i>Centre</i> coordinates define the centrepoint of the fractal image,
+               <li>The <i><b>Rows</b></i> and <i><b>Cols</b></i> parameters control the size of the fractal image.</li>
+               <li>The <i><b>Centre</b></i> coordinates define the centrepoint of the fractal image,
                which in the case of the Mandlebrot Set is the real and imaginary components
                of the centrepoint.</li>
-               <li>The <i>Pixel division</i> represents the resolution of the fractal image.
+               <li>The <i><b>Pixel division</b></i> represents the resolution of the fractal image.
                That is, the real and imaginary components of a pixel's size.</li>
-               <li>The <i>Maximum iterations</i> is the escape point where divergence of the
-               fractal calculations is guaranteed.</li>
+               <li>The <i><b>Maximum iterations</b></i> is the escape point where divergence of the
+               fractal calculation is guaranteed.</li>
              </ul></p>
 
             <p class="images">
          <img src="/static/help-pics/parameters.png" alt="Fractal parameters."></p>
- 
+
+         <a id="Controls"></a>
+         <h3>Fractal controls</h3>
+         <p>Fractal are controls options available to the user to generate or
+            regenerate, as described and illustrated below.
+            <ul>
+               <li>The <i><b>Generate</b></i> control is the main control to generate a fractal image.
+               It generates the fractal corresponding to the current value of the fractal parameters,
+               and rendered in accordance with the current colour palette.<br>
+               Note that some controls act on the current fractal image, so are not available
+               until the first fractal image has been generated.</li>
+               <li>The <i><b>Recentre</b></i> control allows the user to move the centre of the current
+               fractal image to a particult point in the image.</li>
+               <li>The <i><b>Pixel division</b></i> .</li>
+               <li>The <i><b>Maximum iterations</b></i> .</li>
+             </ul></p>
+
+            <p class="images">
+         <img src="/static/help-pics/controls.png" alt="Fractal controls."></p>
+
          <a id="About"></a>
          <h2>About</h2>
          <p style="text-align:center; font-weight: bold;">Fractals</p>
