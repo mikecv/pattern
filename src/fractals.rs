@@ -61,6 +61,7 @@ pub struct Fractal {
     pub escape_its: Vec<Vec<u32>>,
     pub pt_lt: Complex<f64>,
     pub col_palette: Vec<(f32, u32, String, (u8, u8, u8))>,
+    pub active_palette_file: String,
     pub generate_duration: Duration,
     pub recentre_duration: Duration,
     pub rendering_duration: Duration,
@@ -90,6 +91,7 @@ impl Fractal {
             escape_its: Vec::new(),
             pt_lt: Complex::new(0.0, 0.0),
             col_palette: Vec::new(),
+            active_palette_file: "./palettes/default.palette".to_string(),
             generate_duration: Duration::new(0, 0),
             recentre_duration: Duration::new(0, 0),
             rendering_duration: Duration::new(0, 0),
@@ -126,22 +128,21 @@ impl Fractal {
         self.escape_its = vec![vec![0; self.cols as usize]; self.rows as usize];
     }
 
+    // Initialise the currently active colour palette.
+    // This is done before each rendering as the active palette can change.
     pub fn init_col_pallete(&mut self) -> io::Result<()> {
-        info!("Importing default colour palette.");
+        info!("Importing active colour palette.");
 
-        // Create path to default palette file.
-        let mut col_path = PathBuf::new();       
-        col_path.push(&self.settings.palette_folder);
-        col_path.push(&self.settings.def_palette);
-        let col_path_string = col_path.to_string_lossy().into_owned();
+        let col_path_string = &self.active_palette_file;
+        info!("Active colour palette: {:?}", &col_path_string);
 
-        // Read default palette from toml file.
+        // Read active palette from toml file.
         let toml_str = fs::read_to_string(&col_path_string)?;
 
-        // Deserialize into the Root struct
+        // Deserialize into the Root struct.
         let root: Root = toml::from_str(&toml_str).expect("Failed to deserialize palette.");
         
-        // Map the palette entries into palette structure.
+        // Map the palette entries into the palette structure.
         self.col_palette = root.palette
             .into_iter()
             .map(|entry| (entry.rel_index, entry.index, entry.comment, entry.color))
@@ -157,10 +158,12 @@ impl Fractal {
     }
 
     // Method to generate fractal image.
+    // This generates the first fractal and is then used for all
+    // subsequent generations.
     pub fn generate_fractal(&mut self) -> Result<(), FractalError> {
         info!("Generating fractal.");
 
-        // Initialise timer for function.
+        // Initialise timer for the fractal generation function.
         let generate_start = Instant::now();
     
         // Wrap escape_its in an Arc<Mutex<_>> for thread-safe mutable access.
@@ -187,7 +190,7 @@ impl Fractal {
         self.generate_duration = generate_start.elapsed();
         info!("Time to perform fractal divergence: {:?}", self.generate_duration);
 
-        // Initialise timer for function.
+        // Initialise timer for the rendering function.
         let rendering_start = Instant::now();  
     
         // Render the image according to divergence calculations.
@@ -244,7 +247,7 @@ impl Fractal {
             };
             let mut mu = num_its as f64 + 1.0 - mu_log;
 
-            // Limit fractional divergence to maximum iterations'
+            // Limit fractional divergence to maximum iterations.
             if mu > self.max_its as f64 {
                 mu = self.max_its as f64;
             }
@@ -261,7 +264,7 @@ impl Fractal {
     pub fn recentre_fractal(&mut self, c_row: u32, c_col: u32) -> Result<(), FractalError> {
         info!("Recentring fractal to: (row:{:?}, col:{:?})", c_row, c_col);
 
-        // Initialise timer for function.
+        // Initialise timer for the recentring function.
         let recentre_start = Instant::now();
 
         // Re-initialise fractal parameters according to new
@@ -286,7 +289,7 @@ impl Fractal {
     }
 
     // Function to render the image according to the
-    // defined colour palette.
+    // currently active colour palette.
     pub fn render_image(&mut self) {
         info!("Rendering image according to colour palette.");
 
@@ -294,7 +297,7 @@ impl Fractal {
         // as we are not interested in the original path.
         let raw_filename = &self.settings.fractal_filename;
 
-        // Get the folder where files should be written.
+        // Get the folder where fractal image files should be written.
         let wrt_path = PathBuf::from(&self.settings.fractal_folder);
 
         // Ensure the folder exists (optional, if folder creation is necessary).
@@ -353,7 +356,7 @@ impl Fractal {
         // Save the image.
         let _ = img.save(wrt_path_string.clone());
 
-        // Save image filename without path for sending to file store.
+        // Save image filename including path for sending to file store.
         self.image_filename = wrt_path_string.clone();
         info!("Saving fractal image to: {:?}", wrt_path_string);
     }
@@ -362,14 +365,14 @@ impl Fractal {
     pub fn divergence_histogram(&mut self) -> Result<(), FractalError> {
         info!("Generating fractal divergence histogram.");
 
-        // Initialise timer for function.
+        // Initialise timer for histogram chart function.
         let histogram_start = Instant::now();
 
         // Initialise plot vector.
         let mut data = Vec::new();
 
         // Iterate through possible iteration counts, i.e. 1 to maximum iterations.
-        // Then find number of occurances of its in the fractal image pixel divergence count,
+        // Then find number of occurances of (its) in the fractal image pixel divergence count,
         // which is also going to be from 1 to maximum iterations.
         // So the plot x axis is 1 to max_its, and y axis will be 1 to (rows x columns) worst case.
         // Keep track of maximum interations count (max_count).
@@ -407,7 +410,7 @@ impl Fractal {
         }
 
         // Assemble histogram data from the 'data' vector in the format
-        // of bins and counts as follows:
+        // of bins and counts as in following example:
         //
         // self.histogram_data_json = json!({
         //     "bins": [0, 1, 2, 3, 4, 5, 6],
@@ -427,7 +430,7 @@ impl Fractal {
     }  
 }
 
-// Function to determine the colour of the pixel.
+// Function to determine the colour of a  particular pixel.
 // Based on linear interpolation of colour palette.
 pub fn det_px_col(its: u32, col_pal: &Vec<(f32, u32, String, (u8, u8, u8))>) -> Rgb<u8> {
 

@@ -4,6 +4,7 @@
 const defaults = window.defaults;
 
 window.onload = () => {
+    // Initialise parameter values.
     document.getElementById('init_rows').value = defaults.value1 !== undefined ? defaults.value1 : '';
     document.getElementById('init_cols').value = defaults.value2 !== undefined ? defaults.value2 : '';
     document.getElementById('init_mid_pt_re').value = defaults.value3 !== undefined ? defaults.value3 : '';
@@ -11,6 +12,19 @@ window.onload = () => {
     document.getElementById('init_pt_div').value = defaults.value5 !== undefined ? defaults.value5 : '';
     document.getElementById('init_max_its').value = defaults.value6 !== undefined ? defaults.value6 : '';
 };
+
+// Get referemces to buttons (as needed).
+const recentreButton = document.getElementById("recentreButton");
+const histogramButton = document.getElementById("histogramButton");
+
+// Intially disable the re-centre and histogram buttons.
+window.addEventListener("load", () => {
+    recentreButton.disabled = true;
+    histogramButton.disabled = true;
+});
+
+// Get reference to fractal image (as needed).
+const fractalImage = document.getElementById("fractalImage");
 
 // Listener for fractal generate button pressed.
 document.getElementById('generateButton').addEventListener('click', () => {
@@ -20,7 +34,6 @@ document.getElementById('generateButton').addEventListener('click', () => {
     const value4 = parseFloat(document.getElementById('init_mid_pt_im').value);
     const value5 = parseFloat(document.getElementById('init_pt_div').value);
     const value6 = parseInt(document.getElementById('init_max_its').value);
-
 
     // Clear the duration field.
     const durationBox = document.getElementById("duration-box");
@@ -64,9 +77,19 @@ document.getElementById('generateButton').addEventListener('click', () => {
             // Time to perform fractal generation.
             console.log('Fractal generated in: :', data.time);
 
+            // Update the current active colour palette.
+            // Only really needed before first fractal generation.
+            document.getElementById('palette-box').value = data.params.value7;
+
             // Update UI text boxes with status.
             document.getElementById('duration-box').value = data.time;
             document.getElementById('error-box').value = "Fractal generation successful.";
+
+            // Assert the re-centre, re-render, and histogram buttons as inactive.
+            recentreButton.disabled = false;
+            histogramButton.disabled = false;
+            renderButton.disabled = false;
+
         } else {
             throw new Error(data.error);
         }
@@ -77,9 +100,6 @@ document.getElementById('generateButton').addEventListener('click', () => {
         document.getElementById('error-box').value = error.message;
         alert("Failed to generate fractal.");
     });});
-
-const recentreButton = document.getElementById("recentreButton");
-const fractalImage = document.getElementById("fractalImage");
 
 let isRecentreMode = false;
 
@@ -272,3 +292,91 @@ document.getElementById('histogramButton').addEventListener('click', () => {
         }
     });
 });
+
+// Listener for select active colour palette button pressed.
+document.getElementById('paletteButton').addEventListener('click', () => {
+    const fileInput = document.getElementById('paletteFileInput');
+    fileInput.click();
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length > 0) {
+            const selectedFile = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('palette_file', selectedFile);
+
+            // Post to back-end to upload the palette file
+            fetch('/palette', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.palette === "True") {
+                    document.getElementById('palette-box').value = data.palette_file;
+                } else {
+                    throw new Error(data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('error-box').value = error.message;
+                alert("Failed to upload and set active colour palette.");
+            });
+        }
+    }, { once: true });
+});
+
+// Listener for fractal re-render button pressed.
+document.getElementById('renderButton').addEventListener('click', () => {
+
+    // Clear the duration field.
+    const durationBox = document.getElementById("duration-box");
+    durationBox.value = "";
+
+    // Set the status field to "Pending..." while we wait for back-end to process.
+    const statusBox = document.getElementById("error-box");
+    statusBox.value = "Pending...";
+
+    // Post to back-end to re-render the fractal image.
+    fetch('/render', {
+        method: 'POST',
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Re-render image endpoint reached.");
+        // Update the fractal parameters to reflect the parameters
+        // in the backend and not what may or may not have changed in the UI.
+        document.getElementById('init_rows').value = data.params.rows;
+        document.getElementById('init_cols').value = data.params.cols;
+        document.getElementById('init_mid_pt_re').value = data.params.centre_re;
+        document.getElementById('init_mid_pt_im').value = data.params.centre_im;
+        document.getElementById('init_pt_div').value = data.params.pt_div;
+        document.getElementById('init_max_its').value = data.params.max_its;
+
+        if (data.rendered === "True") {
+
+            // Filename of fractal image.
+            console.log('Fractal image: :', data.image);
+
+            // Display the generated image.
+            const imageElement = document.getElementById("fractalImage");
+            const imageUrl = `./fractals/${data.image}`;
+            document.getElementById("fractalImage").src = imageUrl;
+            imageElement.style.display = "block";
+
+            // Time to perform fractal re-render.
+            console.log('Fractal re-rendered in: :', data.time);
+
+            // Update UI text boxes with status.
+            document.getElementById('duration-box').value = data.time;
+            document.getElementById('error-box').value = "Fractal re-rendering successful.";
+        } else {
+            throw new Error(data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // Update UI text boxes with status.
+        document.getElementById('error-box').value = error.message;
+        alert("Failed to re-render fractal.");
+});});
