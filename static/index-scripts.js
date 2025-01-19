@@ -121,9 +121,10 @@ fractalImage.addEventListener("click", (event) => {
     if (!isRecentreMode) return;
 
     // Get image and click coordinates.
+    // Make sure row and column values are integers.
     const rect = fractalImage.getBoundingClientRect();
-    const centre_col = event.clientX - rect.left;
-    const centre_row = event.clientY - rect.top;
+    const centre_col = Math.floor(event.clientX - rect.left);
+    const centre_row = Math.floor(event.clientY - rect.top);
     console.log(`Initial centre point: row:${centre_row}, col:${centre_col}`);
 
     const value1 = parseInt(document.getElementById('init_rows').value);
