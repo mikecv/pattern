@@ -21,6 +21,12 @@
          <a href="#Layout">Screen Layout</a>
          <a href="#Parameters"> - Fractal Parameters</a>
          <a href="#Controls"> - Fractal Controls</a>
+         <a href="#Status"> - App Status</a>
+         <a href="#Fractal"> - Fractal Image</a>
+         <a href="#Functions">Functions in Detail</a>
+         <a href="#Start"> - Starting Fractal</a>
+         <a href="#Recentre"> - Recentring</a>
+         <a href="#Zooming"> - Zooming</a>
          <a href="#About">About</a>
       </div>
       <div id="content" style="padding-left: 50px;">
@@ -38,10 +44,10 @@
          <p>The User interface is a web page consisting of a number of parts,
             namely:
             <ul>
-               <li>Fractal parameters</li>
-               <li>Image controls</li>
-               <li>Application status</li>
-               <li>Fractal image</li>
+               <li>Fractal Parameters</li>
+               <li>Image Controls</li>
+               <li>Application Status</li>
+               <li>Fractal Image</li>
              </ul> 
             These are described in more detail below.</p>
 
@@ -58,14 +64,14 @@
                That is, the real and imaginary components of a pixel's size.</li>
                <li>The <i><b>Maximum iterations</b></i> is the escape point where divergence of the
                fractal calculation is guaranteed.</li>
-             </ul></p>
+            </ul></p>
 
             <p class="images">
-         <img src="/static/help-pics/parameters.png" alt="Fractal parameters."></p>
+               <img src="/static/help-pics/parameters.png" alt="Fractal parameters."></p>
 
          <a id="Controls"></a>
-         <h3>Fractal controls</h3>
-         <p>Fractal are controls options available to the user to generate or
+         <h3>Fractal Controls</h3>
+         <p>Fractal controls are available to the user to generate or
             regenerate, as described and illustrated below.
             <ul>
                <li>The <i><b>Generate</b></i> control is the main control to generate a fractal image.
@@ -74,14 +80,119 @@
                Note that some controls act on the current fractal image, so are not available
                until the first fractal image has been generated.</li>
                <li>The <i><b>Recentre</b></i> control allows the user to move the centre of the current
-               fractal image to a particult point in the image.</li>
-               <li>The <i><b>Pixel division</b></i> .</li>
-               <li>The <i><b>Maximum iterations</b></i> .</li>
-             </ul></p>
+               fractal image to a particular point in the image.<br>
+               Note that this results in a change to the centrepoint parameters,
+               and a regeneration of a fractal image at those parameters.</li>
+               <li>The <i><b>x2 - x10</b></i> controls are a quick way to effect a zoom effect by
+               appluing a fixed zoom factors at the current centrepoint.<br>
+               Note that the zoom controls only modify the <i><b>Pixel division</b></i> parameter,
+               so the <i><b>Generate</b></i> control is still required to generate a new fractal image.</li>
+               <li>The <i><b>Divergence Histogram</b></i> button generates a new tab that contains
+               a chart with the divergence iteration count along the x-axis, and number of pixels
+               in the fractal image the diverged at that count.<br>
+               This type of chart can be useful when developing a colour palette for rendering
+               the fractal image.</li>
+               <li>The <i><b>Palette</b></i> button is used to select a new active colour palette for
+               rendering fractal images. This palette will be used for all furure
+               rendering until a new active colour palette is selected.<br>
+               Note that a default active colour palette is loaded when the application
+               is started.</li>
+               <li>The <i><b>Re-render</b></i> button is used to re-render the current fractal image,
+               that is, the divergence calculations for the fractal is not performed, only
+               rendering is performed.<br>
+               This feature allows the user to make changes to the colour palette used, and
+               to view the outcome of rendering using this colour palette.</li>
+               </ul></p>
 
-            <p class="images">
-         <img src="/static/help-pics/controls.png" alt="Fractal controls."></p>
+               <p class="images">
+                  <img src="/static/help-pics/controls.png" alt="Fractal controls."></p>
+                      
+         <a id="App Status"></a>
+         <h3>App Status</h3>
+         <p>The application status are read-only text boxes that include information about
+            the program performance or state, as described and illustrated below.
+            <ul>
+               <li>The <i><b>Active Palette</b></i> lists the filename (no path) of the currently
+               active colour palette file.<br>
+               Note that the folder for colour palettes is fixed relative to the application folder.</li>
+               <li>The <i><b>Duration</b></i> shows the time taken to perform the previous action
+               by the back-end.</li>
+               <li>The <i><b>Status</b></i> Is for application messages, and generally
+               relates to the succes or failre of the requested function.</li>
+            </ul></p>
 
+         <p class="images">
+            <img src="/static/help-pics/status.png" alt="Applicatio status."></p>
+
+            <a id="Fractal"></a>
+            <h3>Fractal Image</h3>
+            <p>The current fractal image is displayed to the right of the fractal parameters etc.
+               Depending on the size of the fractal image the user may required to resize or
+               scroll their browser screen.<br>
+               Note that the user can alway use browser contols to display the fractal image
+               in a new browser page.</p>
+   
+         <p class="images">
+            <img src="/static/help-pics/full_screen.png" alt="Application screen layout."></p>
+
+            
+         <a id="Functions"></a>
+         <h2>Functions in Detail</h2>
+         <p>The section provides more detailed examples and explanation of Functions
+            listed in previous sections.</p>
+
+         <a id="Start"></a>
+            <h3>Starting Fractal</h3>
+            <p>On startup there is no fractal image displayed.
+               This is to allow the user to select particular fractal parameters if they
+               are looking for a particular image.<br>
+               If they change any of the parameters they will be applied when the user selects
+               the <i><b>Generate</b></i> control; else the default parameters will
+               be applied.<br>
+               In the example below the number of rows and columns have been changed,
+               while all other parameters are at their default values.<br>
+               Note that the currently active colour palette is "default.palette".<br>
+               Note also that from the duration field that in this case the fractal
+               was generated in 43 msec.</p>
+
+         <p class="images">
+            <img src="/static/help-pics/start_fractal.png" alt="Starting fractal."></p>
+      
+         <a id="Recentre"></a>
+            <h3>Recentring</h3>
+            <p>Recentring the fractal image, or panning the image, is achieved by pressing
+               the <i><b>Recentre</b></i> control, afterwhich time:
+               <ul>
+                  <li>The <i><b>Recentre</b></i> control changes to a <i><b>Cancel Recentre</b></i> control
+                  allowing the user to cancel the recentring function.</li>
+                  <li>The cursor changes to a crosshair cursor when over the Image
+                  allowing the user to select the new centrepoint.</li>
+                  <li>The user mouse-clicks to select a new centrepoint for the fractal.</li>
+                  <li>The backend calculates a new fractal image, and the status of and time
+                  to generate the fractal image are displayed.</li>
+               </ul><br>
+               After selecting a new centrepoint the backend calculates and renders
+               a new fractal image around the new centrepoint.<br>
+               Note that currently the complete fractal is recalculated from scratch instead
+               of copying pixels that have moved but still visible in the new fractal image.</p>
+
+            <p>An example of recentring is illustrated in the figure below.
+               In the figure the crosshair cursor has been highlted in the green circle on
+               the fractal image. Note that the new centrepoint is yet to be selected
+               so that the crosshair cursor can be seen.</p>
+
+         <p class="images">
+            <img src="/static/help-pics/recentre-cursor.png" alt="Recentring fractal."></p>
+
+            <p>To further demonstrate the recentring example above the image has been
+               zoomed in by a factor of 10 as illustrated in the figure below.<br>
+               Note in the parameters section of the image below that the values
+               highlighted in cyan reflect the new centrepoint, while the value
+               highlighted in pink reflects the factor 10 zoom.</p>
+
+         <p class="images">
+            <img src="/static/help-pics/zoomx10.png" alt="Recentre and zoom fractal."></p>
+                  
          <a id="About"></a>
          <h2>About</h2>
          <p style="text-align:center; font-weight: bold;">Fractals</p>
