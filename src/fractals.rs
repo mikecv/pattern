@@ -153,7 +153,7 @@ impl Fractal {
             let (lower_rel_index, _lower_bound, _lower_comment, _lower_colour) = &self.col_palette[col_bound];
             self.col_palette[col_bound].1 = (lower_rel_index * self.max_its as f32) as u32;
         }
-        
+
         Ok(())
     }
 
@@ -292,6 +292,9 @@ impl Fractal {
     // currently active colour palette.
     pub fn render_image(&mut self) {
         info!("Rendering image according to colour palette.");
+
+        // Prepare the currently active colour palette.
+        let _ = self.init_col_pallete();
 
         // We need to remove the path from the filename,
         // as we are not interested in the original path.
