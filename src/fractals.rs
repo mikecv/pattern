@@ -45,7 +45,7 @@ struct PaletteEntry {
     rel_index: f32,
     index: u32,
     comment: String,
-    color: (u8, u8, u8),
+    colour: (u8, u8, u8),
 }
 
 // Struct of parameters for fractals generation.
@@ -145,12 +145,12 @@ impl Fractal {
         // Map the palette entries into the palette structure.
         self.col_palette = root.palette
             .into_iter()
-            .map(|entry| (entry.rel_index, entry.index, entry.comment, entry.color))
+            .map(|entry| (entry.rel_index, entry.index, entry.comment, entry.colour))
             .collect();
 
         // Scale colour palette according to max iterations.
         for col_bound in 0..self.col_palette.len() {
-            let (lower_rel_index, _lower_bound, _lower_comment, _lower_color) = &self.col_palette[col_bound];
+            let (lower_rel_index, _lower_bound, _lower_comment, _lower_colour) = &self.col_palette[col_bound];
             self.col_palette[col_bound].1 = (lower_rel_index * self.max_its as f32) as u32;
         }
         

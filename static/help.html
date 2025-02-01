@@ -27,6 +27,7 @@
          <a href="#Start"> - Starting Fractal</a>
          <a href="#Recentre"> - Recentring</a>
          <a href="#Zooming"> - Zooming</a>
+         <a href="#Palette"> - Colour Palette</a>
          <a href="#About">About</a>
       </div>
       <div id="content" style="padding-left: 50px;">
@@ -192,7 +193,64 @@
 
          <p class="images">
             <img src="/static/help-pics/zoomx10.png" alt="Recentre and zoom fractal."></p>
-                  
+
+            <a id="Zooming"></a>
+            <h3>Zooming</h3>
+            <p>To zoom in and out of a fractal you effectively have to set the "Pixel Division"
+               parameter and then press the <i><b>Generate</b></i> button.<br>
+               To zoom out you have to manually set the "Pixel Division"
+               parameter. To zoom in you can manually set the "Pixel Division"
+               parameter or make use of the fixed zoom buttons. Note that zooming is relative
+               to the current centrepoint of the fractal.<br>The following image
+               shows an example fractal that we wish to zoom into. Note that
+               the centrepoint has been highlighted in the green circle.</p>
+
+         <p class="images">
+            <img src="/static/help-pics/before-zoom.png" alt="Prior to zooming fractal."></p>
+
+            <p>An example of zooming in by a factor of 60 is illustrated in the following figure.<br>
+               Highlighted in the figure are the buttons pressed to get the desired zoom factor,
+               i.e. (2 x 3 x 10) = 60.<br>
+               Note that you can press the zoom buttongs in any order as the
+               "Pixel Division" parameter will be updated as each zoom button is pressed.
+               After the zoom level has been set press the <i><b>Generate</b></i> button
+               to generate the new, zoomed in, fractal image, the resultant
+               "Pixel Division" parameter will be set, and the status of generating
+               the fractal and time taken should be updated.</p>
+
+         <p class="images">
+            <img src="/static/help-pics/after-zoom.png" alt="After zooming fractal."></p>
+
+            <p>Note that the rendering colour palatte in the figure above has not been changed
+               from that used for the previous fractal image.</p>
+
+         <a id="Palette"></a>
+            <h3>Colour Palette</h3>
+            <p>Fractal rendering is done according to the current colour palette.
+               The default colour palette is shown in the following figure.<br>
+               The nature of a palette file is that it maps the number of iterations
+               reached before divergence for a pixel to a particular colour.
+               The range of iteration count is from 1 to the "Maximum Iterations" parameter
+               value. To apply to all images the palette file is normalised to
+               a range of 0 to 1, where 1 is the maximum iterations value.
+               Further, the palette file is arranged in bands, where the pixel
+               colour is the linear division of the boundary colours within the
+               corresponding colour band.<br>
+               <br>The palette file is a json format file with a number of "palette" elements,
+               where each elemet represents a colour band and has the following values:
+               <ul>
+                  <li><i><b>rel_index</b></i> - This is the boundary normalised iterations
+                     value. The first boundary must be 0.0 and the last must be 1.0.</li>
+                  <li><i><b>index</b></i> - Internal use.</li>
+                  <li><i><b>comment</b></i> - Comment field, can be used for boundary colour name.</li>
+                  <li><i><b>colour</b></i> - The colour in rgb format at the colour band boundary.</li>
+               </ul><br>
+            </p>
+   
+            <p class="images">
+               <img src="/static/help-pics/default_palette.png" alt="Default colour palette."></p>
+   
+   
          <a id="About"></a>
          <h2>About</h2>
          <p style="text-align:center; font-weight: bold;">Fractals</p>
