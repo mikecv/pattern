@@ -28,6 +28,8 @@
          <a href="#Recentre"> - Recentring</a>
          <a href="#Zooming"> - Zooming</a>
          <a href="#Palette"> - Colour Palette</a>
+         <a href="#Iterations"> - Max Iterations</a>
+         <a href="#Histogram"> - Divergence Histogram</a>
          <a href="#About">About</a>
       </div>
       <div id="content" style="padding-left: 50px;">
@@ -64,7 +66,8 @@
                <li>The <i><b>Pixel division</b></i> represents the resolution of the fractal image.
                That is, the real and imaginary components of a pixel's size.</li>
                <li>The <i><b>Maximum iterations</b></i> is the escape point where divergence of the
-               fractal calculation is guaranteed.</li>
+               fractal calculation is guaranteed. Refer to section <a href="#Iterations">Max Iterations</a>
+               for more information.</li>
             </ul></p>
 
             <p class="images">
@@ -240,7 +243,8 @@
                where each elemet represents a colour band and has the following values:
                <ul>
                   <li><i><b>rel_index</b></i> - This is the boundary normalised iterations
-                     value. The first boundary must be 0.0 and the last must be 1.0.</li>
+                     value. The first boundary must be 0.0 and the last must be 1.0,
+                     ans increasing between 0 and 1 for other colour boundaries.</li>
                   <li><i><b>index</b></i> - Internal use.</li>
                   <li><i><b>comment</b></i> - Comment field, can be used for boundary colour name.</li>
                   <li><i><b>colour</b></i> - The colour in rgb format at the colour band boundary.</li>
@@ -250,7 +254,7 @@
             <p class="images">
                <img src="/static/help-pics/default_palette.png" alt="Default colour palette."></p>
 
-            <p>Let's use the following fractal image rendered in the default colour palette
+            <p>Let's use the fractal image in the following figure, rendered in the default colour palette
                as an example.<br>
                From the edges of the image we see that the colours go from pink to
                purple to light blue and through to light green, orange, finally to navy blue.
@@ -259,8 +263,69 @@
 
             <p class="images">
                <img src="/static/help-pics/original_render.png" alt="Example render."></p>
+
+               <p>Let's now create a new (or modify an existing palette) to apply to
+                  our fractal image.<br>
+                  In the folloing figure we see a new colour palette file.
+                  If is simpler palette with 4 bands going from purple and going through
+                  light blue, light green, and bright blue.</p>
    
+               <p class="images">
+                  <img src="/static/help-pics/varied_palette.png" alt="New and varied palette."></p>   
+
+               <p>Selecting the <i><b>Palette</b></i> button should display a system default
+               file browser to select a colour palette file as illustrated in the figure
+               below.<br>
+               If successful the name of the palette file should appear in the "Active Palette"
+               parameter field</p>
    
+               <p class="images">
+                  <img src="/static/help-pics/select_palette.png" alt="Select new palette to use."></p>   
+
+               <p>At this point we have a new active colour palette, but the current Fractal
+                  image is yet to be rendered according to it.<br>
+                  To render the palette press the <i><b>Re-Render</b></i> button as illustrated
+                  in the following figure.<br>
+                  Note that the previous fractal is now rendered according to the new
+                  colour palette.</p>
+      
+                  <p class="images">
+                     <img src="/static/help-pics/new_render.png" alt="New fractal rendering."></p>   
+
+               <p>As the name suggests, the <i><b>Re-Render</b></i> button the rerenders
+                  the current fractal image. <br>
+                  Rerendering could have just as esily been achived by using the
+                  the <i><b>Generate</b></i> button. The difference is that using the
+                  the <i><b>Generate</b></i> button would have resulted in divergence calculation
+                  processing as well for no additional benefit in this case.</p>
+
+            <a id="Iterations"></a>
+            <h3>Max Iterations</h3>
+               <p>Fractal divergnece calculations could well go on for ever, so a maximum
+                  iterations count is included as one of the fractal parameters (
+                  refer to section <a href="#Parameters">Fractal Parameters</a>).<br>
+                  The number of iterations to determine if a particular point is
+                  or isn't part of the Mandlebrot set, i.e. divergence has or hasn't
+                  diverged is dependent on where in the fractal space you are looking.<br>
+                  It is therefore benefical to not set the maximun number of iterations
+                  higher than is necessary.<br>
+                  <br>One sign that the maximum iterations parameter is set too low is
+                  how fuzzy the fractal edges are when rendered. The general rule is increase
+                  the iteration count until you are satisfied that there is no noticeable
+                  change in the rendered fractal. It should be noted that the rendering
+                  colour palette can make a difference in the general look of the fractal image.<br>
+                  One tool that can assist relating a fractal image to the number of
+                  dibergence iterations required to achive it is discussed in section
+                  <a href="#Histogram">Divergence Histogram</a>.</p>
+
+            <a id="Histogram"></a>
+            <h3>Divergence Histogram</h3>
+               <p>A divergence histogram chart can be generated be pressing the
+                  <i><b>Divergence Histogram</b></i> button as illustrated in the following figure.</p>
+      
+            <p class="images">
+               <img src="/static/help-pics/new_render.png" alt="Divergence histofram."></p>   
+
          <a id="About"></a>
          <h2>About</h2>
          <p style="text-align:center; font-weight: bold;">Fractals</p>
