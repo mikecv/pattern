@@ -21,6 +21,15 @@
          <a href="#Layout">Screen Layout</a>
          <a href="#Parameters"> - Fractal Parameters</a>
          <a href="#Controls"> - Fractal Controls</a>
+         <a href="#Status"> - App Status</a>
+         <a href="#Fractal"> - Fractal Image</a>
+         <a href="#Functions">Functions in Detail</a>
+         <a href="#Start"> - Starting Fractal</a>
+         <a href="#Recentre"> - Recentring</a>
+         <a href="#Zooming"> - Zooming</a>
+         <a href="#Palette"> - Colour Palette</a>
+         <a href="#Iterations"> - Max Iterations</a>
+         <a href="#Histogram"> - Divergence Histogram</a>
          <a href="#About">About</a>
       </div>
       <div id="content" style="padding-left: 50px;">
@@ -38,10 +47,10 @@
          <p>The User interface is a web page consisting of a number of parts,
             namely:
             <ul>
-               <li>Fractal parameters</li>
-               <li>Image controls</li>
-               <li>Application status</li>
-               <li>Fractal image</li>
+               <li>Fractal Parameters</li>
+               <li>Image Controls</li>
+               <li>Application Status</li>
+               <li>Fractal Image</li>
              </ul> 
             These are described in more detail below.</p>
 
@@ -57,15 +66,16 @@
                <li>The <i><b>Pixel division</b></i> represents the resolution of the fractal image.
                That is, the real and imaginary components of a pixel's size.</li>
                <li>The <i><b>Maximum iterations</b></i> is the escape point where divergence of the
-               fractal calculation is guaranteed.</li>
-             </ul></p>
+               fractal calculation is guaranteed. Refer to section <a href="#Iterations">Max Iterations</a>
+               for more information.</li>
+            </ul></p>
 
             <p class="images">
-         <img src="/static/help-pics/parameters.png" alt="Fractal parameters."></p>
+               <img src="/static/help-pics/parameters.png" alt="Fractal parameters."></p>
 
          <a id="Controls"></a>
-         <h3>Fractal controls</h3>
-         <p>Fractal are controls options available to the user to generate or
+         <h3>Fractal Controls</h3>
+         <p>Fractal controls are available to the user to generate or
             regenerate, as described and illustrated below.
             <ul>
                <li>The <i><b>Generate</b></i> control is the main control to generate a fractal image.
@@ -74,14 +84,300 @@
                Note that some controls act on the current fractal image, so are not available
                until the first fractal image has been generated.</li>
                <li>The <i><b>Recentre</b></i> control allows the user to move the centre of the current
-               fractal image to a particult point in the image.</li>
-               <li>The <i><b>Pixel division</b></i> .</li>
-               <li>The <i><b>Maximum iterations</b></i> .</li>
-             </ul></p>
+               fractal image to a particular point in the image.<br>
+               Note that this results in a change to the centrepoint parameters,
+               and a regeneration of a fractal image at those parameters.</li>
+               <li>The <i><b>x2 - x10</b></i> controls are a quick way to effect a zoom effect by
+               appluing a fixed zoom factors at the current centrepoint.<br>
+               Note that the zoom controls only modify the <i><b>Pixel division</b></i> parameter,
+               so the <i><b>Generate</b></i> control is still required to generate a new fractal image.</li>
+               <li>The <i><b>Divergence Histogram</b></i> button generates a new tab that contains
+               a chart with the divergence iteration count along the x-axis, and number of pixels
+               in the fractal image the diverged at that count.<br>
+               This type of chart can be useful when developing a colour palette for rendering
+               the fractal image.</li>
+               <li>The <i><b>Palette</b></i> button is used to select a new active colour palette for
+               rendering fractal images. This palette will be used for all furure
+               rendering until a new active colour palette is selected.<br>
+               Note that a default active colour palette is loaded when the application
+               is started.</li>
+               <li>The <i><b>Re-render</b></i> button is used to re-render the current fractal image,
+               that is, the divergence calculations for the fractal is not performed, only
+               rendering is performed.<br>
+               This feature allows the user to make changes to the colour palette used, and
+               to view the outcome of rendering using this colour palette.</li>
+               </ul></p>
+
+               <p class="images">
+                  <img src="/static/help-pics/controls.png" alt="Fractal controls."></p>
+                      
+         <a id="App Status"></a>
+         <h3>App Status</h3>
+         <p>The application status are read-only text boxes that include information about
+            the program performance or state, as described and illustrated below.
+            <ul>
+               <li>The <i><b>Active Palette</b></i> lists the filename (no path) of the currently
+               active colour palette file.<br>
+               Note that the folder for colour palettes is fixed relative to the application folder.</li>
+               <li>The <i><b>Duration</b></i> shows the time taken to perform the previous action
+               by the back-end.</li>
+               <li>The <i><b>Status</b></i> Is for application messages, and generally
+               relates to the succes or failre of the requested function.</li>
+            </ul></p>
+
+         <p class="images">
+            <img src="/static/help-pics/status.png" alt="Applicatio status."></p>
+
+            <a id="Fractal"></a>
+            <h3>Fractal Image</h3>
+            <p>The current fractal image is displayed to the right of the fractal parameters etc.
+               Depending on the size of the fractal image the user may required to resize or
+               scroll their browser screen.<br>
+               Note that the user can alway use browser contols to display the fractal image
+               in a new browser page.</p>
+   
+         <p class="images">
+            <img src="/static/help-pics/full_screen.png" alt="Application screen layout."></p>
+
+            
+         <a id="Functions"></a>
+         <h2>Functions in Detail</h2>
+         <p>The section provides more detailed examples and explanation of Functions
+            listed in previous sections.</p>
+
+         <a id="Start"></a>
+            <h3>Starting Fractal</h3>
+            <p>On startup there is no fractal image displayed.
+               This is to allow the user to select particular fractal parameters if they
+               are looking for a particular image.<br>
+               If they change any of the parameters they will be applied when the user selects
+               the <i><b>Generate</b></i> control; else the default parameters will
+               be applied.<br>
+               In the example below the number of rows and columns have been changed,
+               while all other parameters are at their default values.<br>
+               Note that the currently active colour palette is "default.palette".<br>
+               Note also that from the duration field that in this case the fractal
+               was generated in 43 msec.</p>
+
+         <p class="images">
+            <img src="/static/help-pics/start_fractal.png" alt="Starting fractal."></p>
+      
+         <a id="Recentre"></a>
+            <h3>Recentring</h3>
+            <p>Recentring the fractal image, or panning the image, is achieved by pressing
+               the <i><b>Recentre</b></i> control, afterwhich time:
+               <ul>
+                  <li>The <i><b>Recentre</b></i> control changes to a <i><b>Cancel Recentre</b></i> control
+                  allowing the user to cancel the recentring function.</li>
+                  <li>The cursor changes to a crosshair cursor when over the Image
+                  allowing the user to select the new centrepoint.</li>
+                  <li>The user mouse-clicks to select a new centrepoint for the fractal.</li>
+                  <li>The backend calculates a new fractal image, and the status of and time
+                  to generate the fractal image are displayed.</li>
+               </ul><br>
+               After selecting a new centrepoint the backend calculates and renders
+               a new fractal image around the new centrepoint.<br>
+               Note that currently the complete fractal is recalculated from scratch instead
+               of copying pixels that have moved but still visible in the new fractal image.</p>
+
+            <p>An example of recentring is illustrated in the figure below.
+               In the figure the crosshair cursor has been highlted in the green circle on
+               the fractal image. Note that the new centrepoint is yet to be selected
+               so that the crosshair cursor can be seen.</p>
+
+         <p class="images">
+            <img src="/static/help-pics/recentre-cursor.png" alt="Recentring fractal."></p>
+
+            <p>To further demonstrate the recentring example above the image has been
+               zoomed in by a factor of 10 as illustrated in the figure below.<br>
+               Note in the parameters section of the image below that the values
+               highlighted in cyan reflect the new centrepoint, while the value
+               highlighted in pink reflects the factor 10 zoom.</p>
+
+         <p class="images">
+            <img src="/static/help-pics/zoomx10.png" alt="Recentre and zoom fractal."></p>
+
+            <a id="Zooming"></a>
+            <h3>Zooming</h3>
+            <p>To zoom in and out of a fractal you effectively have to set the "Pixel Division"
+               parameter and then press the <i><b>Generate</b></i> button.<br>
+               To zoom out you have to manually set the "Pixel Division"
+               parameter. To zoom in you can manually set the "Pixel Division"
+               parameter or make use of the fixed zoom buttons. Note that zooming is relative
+               to the current centrepoint of the fractal.<br>The following image
+               shows an example fractal that we wish to zoom into. Note that
+               the centrepoint has been highlighted in the green circle.</p>
+
+         <p class="images">
+            <img src="/static/help-pics/before-zoom.png" alt="Prior to zooming fractal."></p>
+
+            <p>An example of zooming in by a factor of 60 is illustrated in the following figure.<br>
+               Highlighted in the figure are the buttons pressed to get the desired zoom factor,
+               i.e. (2 x 3 x 10) = 60.<br>
+               Note that you can press the zoom buttongs in any order as the
+               "Pixel Division" parameter will be updated as each zoom button is pressed.
+               After the zoom level has been set press the <i><b>Generate</b></i> button
+               to generate the new, zoomed in, fractal image, the resultant
+               "Pixel Division" parameter will be set, and the status of generating
+               the fractal and time taken should be updated.</p>
+
+         <p class="images">
+            <img src="/static/help-pics/after-zoom.png" alt="After zooming fractal."></p>
+
+            <p>Note that the rendering colour palatte in the figure above has not been changed
+               from that used for the previous fractal image.</p>
+
+         <a id="Palette"></a>
+            <h3>Colour Palette</h3>
+            <p>Fractal rendering is done according to the current colour palette.
+               The default colour palette is shown in the following figure.<br>
+               The nature of a palette file is that it maps the number of iterations
+               reached before divergence for a pixel to a particular colour.
+               The range of iteration count is from 1 to the "Maximum Iterations" parameter
+               value. To apply to all images the palette file is normalised to
+               a range of 0 to 1, where 1 is the maximum iterations value.
+               Further, the palette file is arranged in bands, where the pixel
+               colour is the linear division of the boundary colours within the
+               corresponding colour band.<br>
+               <br>The palette file is a json format file with a number of "palette" elements,
+               where each elemet represents a colour band and has the following values:
+               <ul>
+                  <li><i><b>rel_index</b></i> - This is the boundary normalised iterations
+                     value. The first boundary must be 0.0 and the last must be 1.0,
+                     ans increasing between 0 and 1 for other colour boundaries.</li>
+                  <li><i><b>index</b></i> - Internal use.</li>
+                  <li><i><b>comment</b></i> - Comment field, can be used for boundary colour name.</li>
+                  <li><i><b>colour</b></i> - The colour in rgb format at the colour band boundary.</li>
+               </ul>
+            </p>
+   
+            <p class="images">
+               <img src="/static/help-pics/default_palette.png" alt="Default colour palette."></p>
+
+            <p>Let's use the fractal image in the following figure, rendered in the default colour palette
+               as an example.<br>
+               From the edges of the image we see that the colours go from pink to
+               purple to light blue and through to light green, orange, finally to navy blue.
+               If we look at the palette file above we see the same colour bands
+               going from 1 to maximum number of iterations.</p>
 
             <p class="images">
-         <img src="/static/help-pics/controls.png" alt="Fractal controls."></p>
+               <img src="/static/help-pics/original_render.png" alt="Example render."></p>
 
+               <p>Let's now create a new (or modify an existing palette) to apply to
+                  our fractal image.<br>
+                  In the folloing figure we see a new colour palette file.
+                  If is simpler palette with 4 bands going from purple and going through
+                  light blue, light green, and bright blue.</p>
+   
+               <p class="images">
+                  <img src="/static/help-pics/new_varied_palette.png" alt="New and varied palette."></p>   
+
+               <p>Selecting the <i><b>Palette</b></i> button should display a system default
+               file browser to select a colour palette file as illustrated in the figure
+               below.<br>
+               If successful the name of the palette file should appear in the "Active Palette"
+               parameter field</p>
+   
+               <p class="images">
+                  <img src="/static/help-pics/select_palette.png" alt="Select new palette to use."></p>   
+
+               <p>At this point we have a new active colour palette, but the current Fractal
+                  image is yet to be rendered according to it.<br>
+                  To render the palette press the <i><b>Re-Render</b></i> button as illustrated
+                  in the following figure.<br>
+                  Note that the previous fractal is now rendered according to the new
+                  colour palette.</p>
+      
+                  <p class="images">
+                     <img src="/static/help-pics/new_render.png" alt="New fractal rendering."></p>   
+
+               <p>As the name suggests, the <i><b>Re-Render</b></i> button the rerenders
+                  the current fractal image. <br>
+                  Rerendering could have just as esily been achived by using the
+                  the <i><b>Generate</b></i> button. The difference is that using the
+                  the <i><b>Generate</b></i> button would have resulted in divergence calculation
+                  processing as well for no additional benefit in this case.</p>
+
+            <a id="Iterations"></a>
+            <h3>Max Iterations</h3>
+               <p>Fractal divergence calculations could well go on for ever, so a maximum
+                  iterations count is included as one of the fractal parameters (
+                  refer to section <a href="#Parameters">Fractal Parameters</a>).<br>
+                  The number of iterations to determine if a particular point is
+                  or isn't part of the Mandlebrot set, i.e. divergence has or hasn't
+                  diverged is dependent on where in the fractal space you are looking.<br>
+                  It is therefore benefical to not set the maximun number of iterations
+                  higher than is necessary.<br>
+                  <br>One sign that the maximum iterations parameter is set too low is
+                  how fuzzy the fractal edges are when rendered. The general rule is increase
+                  the iteration count until you are satisfied that there is no noticeable
+                  change in the rendered fractal. It should be noted that the rendering
+                  colour palette can make a difference in the general look of the fractal image.<br>
+                  One tool that can assist relating a fractal image to the number of
+                  dibergence iterations required to achive it is discussed in section
+                  <a href="#Histogram">Divergence Histogram</a>.</p>
+
+            <a id="Histogram"></a>
+            <h3>Divergence Histogram</h3>
+               <p>A divergence histogram chart can be generated be pressing the
+                  <i><b>Divergence Histogram</b></i> button as illustrated in the following figure
+                  for the fractal image in section <a href="#Iterations">Max Iterations</a>.<br>
+                  The chart is created in a separate browser tab.<br>
+                  <br>Things to note about the divergence histogram chart.
+                  <ul>
+                     <li>The x-axis has 2 scales - the first is in iteration count, i.e. ranging From
+                     one to the maximum number of iterations. The second axis is the iteration
+                     count normalised from 0 to 1.</li>
+                     <li>The vertical axis is pixel count at a particular iteration count,
+                     and uses a logarithmic scale.</li>
+                  </ul>
+               </p>
+
+               <p class="images">
+                  <img src="/static/help-pics/histogram-100.png" alt="Divergence histogram for 100 iterations."></p>   
+
+               <p>Things we can see from the divergence histogram is that there are no pixels
+                  with iteration counts less than 21 or 0.2%. And that there are over 1000
+                  pixels that reach the maximum iterations.<br>
+                  What we might conclude from this is that there is some of the palette
+                  that is not used, and also there is scope to increase the resolution
+                  of the fractal image.<br>
+                  <br>We can change the palette to better reflect the distribution of divergence
+                  count, as illustrated in the following example.</p>
+
+               <p class="images">
+                  <img src="/static/help-pics/new-palette.png" alt="New palette."></p>   
+
+               <p>Applying the new palette to the existing fractal image we see the following rendering.
+                  t is similar to the previous rendering but with a little more content and detail
+                  in the yellow and white areas.</p>
+
+              <p class="images">
+                  <img src="/static/help-pics/fractal-new-palette-100.png" alt="Fractal (100 its) rendered with new palette."></p>   
+
+                  <p>Now let's see what happens if we increase the maximum iterations parameter to
+                  capture more of the fractal detail.<br>
+                  As illustrated in the following figure we see where the maximum iteration count
+                  has been changed to 300 and then the <i><b>Generate</b></i> button is pressed
+                  to create a new fractal.<br>
+                  <br>We see in the figure below that the fractal is the same but has a lot more
+                  and sharper detail.</p>
+
+               <p class="images">
+                  <img src="/static/help-pics/fractal-300-iterations.png" alt="Fractal (300 its) rendered with new palette."></p>   
+
+               <p>We can repeat the exercise above by looking at the divergence histogram for this fractal.
+                  The follow figure shows the divergence histgram for a fractal with maximum iterations
+                  sett to 330.<br>
+                  We see that a lot more of the detail has been captures as the non divergent pixel counts
+                  are less than 50 per count. From here, we could look at increasing the minimum iteration
+                  count to captre even finer detail, and/or change the colour palette file to shange the
+                  rendering.</p>
+
+               <p class="images">
+                  <img src="/static/help-pics/histogram-300.png" alt="Histogram for fractal with 300 iterations.."></p>   
+   
          <a id="About"></a>
          <h2>About</h2>
          <p style="text-align:center; font-weight: bold;">Fractals</p>

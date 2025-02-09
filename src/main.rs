@@ -372,6 +372,10 @@ async fn palette(mut payload: Multipart, fractal: web::Data<Arc<Mutex<Fractal>>>
                         }
                     }
             
+                    // Update the fractal instance with the new active palette file.
+                    fractal.active_palette_file = filepath.clone();
+
+                    // Filename only of palette for front end.
                     active_palette_file = Some(filename.to_string());
                 }
             }
@@ -379,8 +383,6 @@ async fn palette(mut payload: Multipart, fractal: web::Data<Arc<Mutex<Fractal>>>
     }
   
     if let Some(palette_file) = active_palette_file {
-        // Update the fractal instance with the new active palette file.
-        fractal.active_palette_file = palette_file.clone();
 
         // Construct payload for UI.
         let response_data = json!({
@@ -430,6 +432,9 @@ async fn render(fractal: web::Data<Arc<Mutex<Fractal>>>,) -> impl Responder {
     params.centre_im = fractal.mid_pt.im;
     params.pt_div = fractal.pt_div;
     params.max_its = fractal.max_its;
+
+    // Initialise the colour palette as it may have changed.
+    let _ = fractal.init_col_pallete();
 
     // Re-render the fractal image.
     fractal.render_image();
