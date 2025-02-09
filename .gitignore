@@ -20,4 +20,5 @@ Cargo.lock
 /fractals/*
 /palettes/
 /palettes/default.palette
+/palettes/default*.palette
 notes.txt
